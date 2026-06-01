@@ -25,6 +25,9 @@ function resize(){
   canvas.height = window.innerHeight;
   calcBtns();
 }
+let currentLevel;
+let levelPage = 0; // 0..2 — 10 tadan sahifa
+
 resize();
 window.addEventListener('resize', resize);
 
@@ -646,13 +649,1157 @@ function makeLevel3(){
   };
 }
 
-const LEVEL_FACTORIES = [makeLevel1, makeLevel2, makeLevel3];
+// ─── DARAJALAR 4-30 ───────────────────────────────────────
+function makeLevel4(){
+  const Y=520;
+  return {
+    name:'4-DARAJA: Ko\'k Yo\'l', worldW:3200, worldH:800,
+    startX:60, startY:Y-80, bg1:'#040e20', bg2:'#081428', initColor:2,
+    platforms:[
+      new Platform(0,Y,300,30,-1),
+      new Platform(340,Y-80,90,20,2), new Platform(480,Y-160,90,20,0),
+      new Platform(620,Y-80,90,20,1), new Platform(760,Y-160,90,20,2),
+      new Platform(900,Y-80,90,20,0), new Platform(1050,Y,220,30,-1),
+      new Platform(1320,Y-100,110,20,2), new Platform(1480,Y-180,110,20,1),
+      new Platform(1640,Y-100,110,20,0), new Platform(1800,Y-180,110,20,2),
+      new Platform(1960,Y,200,30,-1),
+      new Platform(2200,Y-120,100,20,1), new Platform(2350,Y-200,100,20,2),
+      new Platform(2500,Y-280,100,20,0), new Platform(2650,Y-200,100,20,1),
+      new Platform(2800,Y-120,100,20,2), new Platform(2950,Y,250,30,-1),
+    ],
+    spikes:[
+      new Spike(300,Y-18,40,-1), new Spike(990,Y-18,60,-1),
+      new Spike(1260,Y-18,60,-1), new Spike(1950,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(360,Y-105,340,620,2), new Enemy(780,Y-185,760,900,-1),
+      new Enemy(1340,Y-125,1320,1640,1), new Enemy(2210,Y-145,2200,2500,0),
+    ],
+    gems:[
+      new Gem(360,Y-132,2), new Gem(500,Y-212,0), new Gem(640,Y-132,1),
+      new Gem(780,Y-212,2), new Gem(920,Y-132,0), new Gem(1340,Y-152,2),
+      new Gem(1500,Y-232,1), new Gem(1660,Y-152,0), new Gem(1820,Y-232,2),
+      new Gem(2220,Y-172,1), new Gem(2370,Y-252,2), new Gem(2520,Y-332,0),
+    ],
+    portal: new Portal(3050,Y-90),
+  };
+}
+function makeLevel5(){
+  const Y=500;
+  return {
+    name:'5-DARAJA: Qizil Maydon', worldW:3600, worldH:800,
+    startX:60, startY:Y-80, bg1:'#1a0408', bg2:'#280608', initColor:0,
+    platforms:[
+      new Platform(0,Y,250,30,-1),
+      new Platform(290,Y-60,80,20,0), new Platform(290,Y-130,80,20,1),
+      new Platform(420,Y-60,80,20,2), new Platform(420,Y-130,80,20,0),
+      new Platform(550,Y-60,80,20,1), new Platform(550,Y-130,80,20,2),
+      new Platform(680,Y,180,30,-1),
+      new Platform(910,Y-90,100,20,0), new Platform(1060,Y-170,100,20,2),
+      new Platform(1210,Y-90,100,20,1), new Platform(1360,Y-170,100,20,0),
+      new Platform(1510,Y,220,30,-1),
+      new Platform(1780,Y-80,120,20,2), new Platform(1950,Y-160,120,20,0),
+      new Platform(2120,Y-240,120,20,1), new Platform(2290,Y-320,120,20,2),
+      new Platform(2460,Y-240,120,20,0), new Platform(2630,Y-160,120,20,1),
+      new Platform(2800,Y-80,120,20,2), new Platform(2970,Y,200,30,-1),
+      new Platform(3220,Y-120,140,20,0), new Platform(3400,Y,200,30,-1),
+    ],
+    spikes:[
+      new Spike(250,Y-18,40,-1), new Spike(860,Y-18,50,-1),
+      new Spike(1690,Y-18,40,-1), new Spike(2960,Y-18,60,-1),
+    ],
+    enemies:[
+      new Enemy(300,Y-85,290,670,0), new Enemy(930,Y-115,910,1210,2),
+      new Enemy(1800,Y-105,1780,2100,0), new Enemy(2810,Y-105,2800,2970,-1),
+    ],
+    gems:[
+      new Gem(310,Y-112,0), new Gem(440,Y-185,2), new Gem(570,Y-185,1),
+      new Gem(930,Y-142,0), new Gem(1080,Y-222,2), new Gem(1230,Y-142,1),
+      new Gem(1800,Y-132,2), new Gem(1970,Y-212,0), new Gem(2310,Y-372,2),
+      new Gem(2650,Y-212,1), new Gem(2820,Y-132,2), new Gem(3240,Y-172,0),
+    ],
+    portal: new Portal(3500,Y-90),
+  };
+}
+function makeLevel6(){
+  const Y=510;
+  return {
+    name:"6-DARAJA: Yashil O'rmon", worldW:3800, worldH:800,
+    startX:60, startY:Y-80, bg1:'#041408', bg2:'#082010', initColor:1,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(250,Y-100,70,20,1), new Platform(370,Y-180,70,20,2),
+      new Platform(490,Y-100,70,20,0), new Platform(610,Y-180,70,20,1),
+      new Platform(730,Y-100,70,20,2), new Platform(850,Y-180,70,20,0),
+      new Platform(970,Y,200,30,-1),
+      new Platform(1210,Y-110,120,20,1), new Platform(1380,Y-190,120,20,0),
+      new Platform(1550,Y-110,120,20,2), new Platform(1720,Y-190,120,20,1),
+      new Platform(1890,Y,200,30,-1),
+      new Platform(2140,Y-90,90,20,0), new Platform(2280,Y-170,90,20,1),
+      new Platform(2420,Y-250,90,20,2), new Platform(2560,Y-330,90,20,0),
+      new Platform(2700,Y-410,140,20,-1),
+      new Platform(2880,Y-350,90,20,1), new Platform(3020,Y-270,90,20,2),
+      new Platform(3160,Y-190,90,20,0), new Platform(3300,Y-110,90,20,1),
+      new Platform(3440,Y,360,30,-1),
+    ],
+    spikes:[
+      new Spike(200,Y-18,50,-1), new Spike(970,Y-18,60,-1),
+      new Spike(1170,Y-18,40,-1), new Spike(1880,Y-18,60,-1),
+      new Spike(2100,Y-18,40,-1),
+    ],
+    enemies:[
+      new Enemy(270,Y-125,250,850,1), new Enemy(1230,Y-135,1210,1550,0),
+      new Enemy(2730,Y-435,2700,2870,-1), new Enemy(3460,Y-30,3440,3800,2),
+    ],
+    gems:[
+      new Gem(270,Y-152,1), new Gem(390,Y-232,2), new Gem(510,Y-152,0),
+      new Gem(630,Y-232,1), new Gem(750,Y-152,2), new Gem(870,Y-232,0),
+      new Gem(1230,Y-162,1), new Gem(1400,Y-242,0), new Gem(1570,Y-162,2),
+      new Gem(2160,Y-142,0), new Gem(2580,Y-382,2), new Gem(2720,Y-462,-1),
+    ],
+    portal: new Portal(3700,Y-90),
+  };
+}
+function makeLevel7(){
+  const Y=515;
+  return {
+    name:'7-DARAJA: Muzli Tog\'', worldW:4000, worldH:800,
+    startX:60, startY:Y-80, bg1:'#060e1e', bg2:'#0a1428', initColor:0,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(230,Y-70,60,20,0), new Platform(340,Y-140,60,20,1), new Platform(450,Y-210,60,20,2),
+      new Platform(560,Y-140,60,20,0), new Platform(670,Y-70,60,20,1), new Platform(780,Y,200,30,-1),
+      new Platform(1030,Y-130,100,20,2), new Platform(1180,Y-220,100,20,0),
+      new Platform(1330,Y-130,100,20,1), new Platform(1480,Y-220,100,20,2),
+      new Platform(1630,Y,200,30,-1),
+      new Platform(1880,Y-110,110,20,0), new Platform(2040,Y-190,110,20,1),
+      new Platform(2200,Y-270,110,20,2), new Platform(2360,Y-190,110,20,0),
+      new Platform(2520,Y-110,110,20,1), new Platform(2680,Y,200,30,-1),
+      new Platform(2940,Y-140,120,20,2), new Platform(3110,Y-250,120,20,0),
+      new Platform(3280,Y-360,120,20,1), new Platform(3450,Y-250,120,20,2),
+      new Platform(3620,Y-140,120,20,0), new Platform(3790,Y,210,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,50,-1), new Spike(980,Y-18,50,-1),
+      new Spike(1630,Y-18,50,-1), new Spike(2680,Y-18,60,-1),
+    ],
+    enemies:[
+      new Enemy(250,Y-95,230,660,0), new Enemy(1050,Y-155,1030,1330,2),
+      new Enemy(1900,Y-135,1880,2200,1), new Enemy(2960,Y-165,2940,3280,2),
+    ],
+    gems:[
+      new Gem(250,Y-122,0), new Gem(360,Y-192,1), new Gem(470,Y-262,2),
+      new Gem(580,Y-192,0), new Gem(1050,Y-182,2), new Gem(1200,Y-272,0),
+      new Gem(1900,Y-162,0), new Gem(2220,Y-322,2), new Gem(2380,Y-242,0),
+      new Gem(2960,Y-192,2), new Gem(3300,Y-412,1), new Gem(3640,Y-192,0),
+    ],
+    portal: new Portal(3880,Y-90),
+  };
+}
+function makeLevel8(){
+  const Y=505;
+  return {
+    name:'8-DARAJA: Rang Daryo', worldW:4200, worldH:800,
+    startX:60, startY:Y-80, bg1:'#08080e', bg2:'#10101e', initColor:1,
+    platforms:[
+      new Platform(0,Y,220,30,-1),
+      new Platform(260,Y-80,100,20,0), new Platform(410,Y-80,100,20,1), new Platform(560,Y-80,100,20,2),
+      new Platform(710,Y-80,100,20,0), new Platform(860,Y-80,100,20,1), new Platform(1010,Y,220,30,-1),
+      new Platform(1280,Y-150,130,20,2), new Platform(1460,Y-80,130,20,0), new Platform(1640,Y-150,130,20,1),
+      new Platform(1820,Y-80,130,20,2), new Platform(2000,Y,200,30,-1),
+      new Platform(2260,Y-100,100,20,0), new Platform(2410,Y-180,100,20,1),
+      new Platform(2560,Y-260,100,20,2), new Platform(2710,Y-340,100,20,0),
+      new Platform(2860,Y-260,100,20,1), new Platform(3010,Y-180,100,20,2),
+      new Platform(3160,Y-100,100,20,0), new Platform(3310,Y,220,30,-1),
+      new Platform(3580,Y-120,120,20,1), new Platform(3750,Y-200,120,20,2),
+      new Platform(3920,Y-120,120,20,0), new Platform(4050,Y,200,30,-1),
+    ],
+    spikes:[
+      new Spike(220,Y-18,40,-1), new Spike(1010,Y-18,70,-1),
+      new Spike(2000,Y-18,60,-1), new Spike(3310,Y-18,70,-1),
+    ],
+    enemies:[
+      new Enemy(280,Y-105,260,1000,0), new Enemy(1300,Y-175,1280,1640,2),
+      new Enemy(2280,Y-125,2260,2560,1), new Enemy(3600,Y-145,3580,3920,2),
+    ],
+    gems:[
+      new Gem(280,Y-132,0), new Gem(430,Y-132,1), new Gem(580,Y-132,2),
+      new Gem(730,Y-132,0), new Gem(880,Y-132,1), new Gem(1300,Y-202,2),
+      new Gem(1480,Y-132,0), new Gem(1660,Y-202,1), new Gem(1840,Y-132,2),
+      new Gem(2280,Y-152,0), new Gem(2730,Y-392,0), new Gem(3600,Y-172,1),
+    ],
+    portal: new Portal(4100,Y-90),
+  };
+}
+function makeLevel9(){
+  const Y=490;
+  return {
+    name:'9-DARAJA: Qorong\'u Voha', worldW:4400, worldH:800,
+    startX:60, startY:Y-80, bg1:'#050508', bg2:'#080810', initColor:2,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-90,65,20,0), new Platform(330,Y-165,65,20,2), new Platform(440,Y-90,65,20,1),
+      new Platform(550,Y-165,65,20,0), new Platform(660,Y-90,65,20,2), new Platform(770,Y-165,65,20,1),
+      new Platform(880,Y-90,65,20,0), new Platform(990,Y,200,30,-1),
+      new Platform(1240,Y-120,110,20,2), new Platform(1400,Y-200,110,20,0),
+      new Platform(1560,Y-120,110,20,1), new Platform(1720,Y-200,110,20,2),
+      new Platform(1880,Y,200,30,-1),
+      new Platform(2130,Y-100,90,20,0), new Platform(2270,Y-180,90,20,1),
+      new Platform(2410,Y-260,90,20,2), new Platform(2550,Y-340,90,20,0),
+      new Platform(2690,Y-420,140,20,-1),
+      new Platform(2870,Y-360,90,20,1), new Platform(3010,Y-280,90,20,2),
+      new Platform(3150,Y-200,90,20,0), new Platform(3290,Y-120,90,20,1),
+      new Platform(3430,Y,200,30,-1),
+      new Platform(3680,Y-110,120,20,2), new Platform(3850,Y-190,120,20,0),
+      new Platform(4020,Y-110,120,20,1), new Platform(4200,Y,200,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(990,Y-18,50,-1),
+      new Spike(1190,Y-18,50,-1), new Spike(1880,Y-18,50,-1),
+      new Spike(3430,Y-18,50,-1), new Spike(3630,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-115,220,880,2), new Enemy(1260,Y-145,1240,1560,0),
+      new Enemy(2720,Y-445,2690,2860,-1), new Enemy(3450,Y-30,3430,3680,-1),
+      new Enemy(3700,Y-135,3680,4020,2),
+    ],
+    gems:[
+      new Gem(240,Y-142,0), new Gem(350,Y-217,2), new Gem(460,Y-142,1),
+      new Gem(570,Y-217,0), new Gem(680,Y-142,2), new Gem(790,Y-217,1),
+      new Gem(1260,Y-172,2), new Gem(1420,Y-252,0), new Gem(1580,Y-172,1),
+      new Gem(2710,Y-472,-1), new Gem(3700,Y-162,2), new Gem(4040,Y-162,1),
+    ],
+    portal: new Portal(4280,Y-90),
+  };
+}
+function makeLevel10(){
+  const Y=510;
+  return {
+    name:'10-DARAJA: Yarim Dunyo', worldW:4600, worldH:800,
+    startX:60, startY:Y-80, bg1:'#0e0614', bg2:'#180a20', initColor:0,
+    platforms:[
+      new Platform(0,Y,240,30,-1),
+      new Platform(280,Y-70,75,20,0), new Platform(400,Y-140,75,20,1), new Platform(520,Y-70,75,20,2),
+      new Platform(640,Y-140,75,20,0), new Platform(760,Y-70,75,20,1), new Platform(880,Y-140,75,20,2),
+      new Platform(1000,Y,220,30,-1),
+      new Platform(1260,Y-100,110,20,0), new Platform(1420,Y-170,110,20,1), new Platform(1580,Y-240,110,20,2),
+      new Platform(1740,Y-170,110,20,0), new Platform(1900,Y-100,110,20,1), new Platform(2060,Y,220,30,-1),
+      new Platform(2310,Y-120,100,20,2), new Platform(2460,Y-200,100,20,0),
+      new Platform(2610,Y-280,100,20,1), new Platform(2760,Y-360,100,20,2),
+      new Platform(2910,Y-280,100,20,0), new Platform(3060,Y-200,100,20,1),
+      new Platform(3210,Y-120,100,20,2), new Platform(3360,Y,220,30,-1),
+      new Platform(3620,Y-90,120,20,0), new Platform(3790,Y-170,120,20,1),
+      new Platform(3960,Y-250,120,20,2), new Platform(4130,Y-170,120,20,0),
+      new Platform(4300,Y-90,120,20,1), new Platform(4470,Y,160,30,-1),
+    ],
+    spikes:[
+      new Spike(240,Y-18,40,-1), new Spike(1000,Y-18,60,-1),
+      new Spike(2060,Y-18,50,-1), new Spike(3360,Y-18,60,-1),
+    ],
+    enemies:[
+      new Enemy(300,Y-95,280,880,0), new Enemy(1280,Y-125,1260,1580,1),
+      new Enemy(2330,Y-145,2310,2610,2), new Enemy(3640,Y-115,3620,3960,0),
+      new Enemy(4150,Y-195,4130,4300,1),
+    ],
+    gems:[
+      new Gem(300,Y-122,0), new Gem(420,Y-192,1), new Gem(540,Y-122,2),
+      new Gem(660,Y-192,0), new Gem(780,Y-122,1), new Gem(900,Y-192,2),
+      new Gem(1280,Y-152,0), new Gem(1600,Y-292,2), new Gem(1760,Y-222,0),
+      new Gem(2780,Y-412,2), new Gem(3640,Y-142,0), new Gem(3980,Y-302,2),
+    ],
+    portal: new Portal(4520,Y-90),
+  };
+}
+function makeLevel11(){
+  const Y=500;
+  return {
+    name:'11-DARAJA: Rang Portali', worldW:3800, worldH:800,
+    startX:60, startY:Y-80, bg1:'#0a0418', bg2:'#140820', initColor:1,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(240,Y-80,80,20,1), new Platform(370,Y-160,80,20,0), new Platform(500,Y-80,80,20,2),
+      new Platform(630,Y-160,80,20,1), new Platform(760,Y-80,80,20,0), new Platform(890,Y,200,30,-1),
+      new Platform(1130,Y-200,22,200,1), new Platform(1130,Y-200,180,22,2), new Platform(1308,Y-200,22,200,0),
+      new Platform(1130,Y,180,30,-1),
+      new Platform(1560,Y-110,100,20,1), new Platform(1710,Y-190,100,20,2),
+      new Platform(1860,Y-110,100,20,0), new Platform(2010,Y-190,100,20,1),
+      new Platform(2160,Y,200,30,-1),
+      new Platform(2400,Y-130,110,20,2), new Platform(2560,Y-210,110,20,0),
+      new Platform(2720,Y-290,110,20,1), new Platform(2880,Y-370,110,20,2),
+      new Platform(3040,Y-450,140,20,-1),
+      new Platform(3220,Y-370,110,20,0), new Platform(3380,Y-290,110,20,1),
+      new Platform(3540,Y-210,110,20,2), new Platform(3700,Y,150,30,-1),
+    ],
+    spikes:[
+      new Spike(200,Y-18,40,-1), new Spike(890,Y-18,60,-1),
+      new Spike(2160,Y-18,60,-1), new Spike(3690,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(260,Y-105,240,760,1), new Enemy(1160,Y-225,1130,1308,2),
+      new Enemy(1580,Y-135,1560,1860,0), new Enemy(2420,Y-155,2400,2720,2),
+    ],
+    gems:[
+      new Gem(260,Y-132,1), new Gem(390,Y-212,0), new Gem(520,Y-132,2),
+      new Gem(650,Y-212,1), new Gem(780,Y-132,0), new Gem(1160,Y-252,-1),
+      new Gem(1580,Y-162,1), new Gem(1730,Y-242,2), new Gem(1880,Y-162,0),
+      new Gem(2420,Y-182,2), new Gem(2900,Y-422,2), new Gem(3060,Y-502,-1),
+    ],
+    portal: new Portal(3720,Y-90),
+  };
+}
+function makeLevel12(){
+  const Y=495;
+  return {
+    name:'12-DARAJA: Chaqmoq Yo\'li', worldW:4000, worldH:800,
+    startX:60, startY:Y-80, bg1:'#121004', bg2:'#1e1808', initColor:2,
+    platforms:[
+      new Platform(0,Y,160,30,-1),
+      new Platform(200,Y-100,70,20,0), new Platform(320,Y-180,70,20,2),
+      new Platform(440,Y-100,70,20,1), new Platform(560,Y-180,70,20,0),
+      new Platform(680,Y-100,70,20,2), new Platform(800,Y-180,70,20,1),
+      new Platform(920,Y-100,70,20,0), new Platform(1040,Y,200,30,-1),
+      new Platform(1290,Y-120,110,20,2), new Platform(1450,Y-200,110,20,1),
+      new Platform(1610,Y-120,110,20,0), new Platform(1770,Y-200,110,20,2),
+      new Platform(1930,Y,200,30,-1),
+      new Platform(2180,Y-90,95,20,1), new Platform(2325,Y-170,95,20,0),
+      new Platform(2470,Y-250,95,20,2), new Platform(2615,Y-330,95,20,1),
+      new Platform(2760,Y-410,140,20,-1),
+      new Platform(2940,Y-350,95,20,0), new Platform(3085,Y-270,95,20,2),
+      new Platform(3230,Y-190,95,20,1), new Platform(3375,Y-110,95,20,0),
+      new Platform(3520,Y,200,30,-1),
+      new Platform(3770,Y-130,130,20,2), new Platform(3950,Y,100,30,-1),
+    ],
+    spikes:[
+      new Spike(160,Y-18,40,-1), new Spike(1040,Y-18,50,-1),
+      new Spike(1930,Y-18,50,-1), new Spike(3520,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(220,Y-125,200,920,2), new Enemy(1310,Y-145,1290,1610,1),
+      new Enemy(2200,Y-115,2180,2470,0), new Enemy(3790,Y-155,3770,3950,2),
+    ],
+    gems:[
+      new Gem(220,Y-152,0), new Gem(340,Y-232,2), new Gem(460,Y-152,1),
+      new Gem(580,Y-232,0), new Gem(700,Y-152,2), new Gem(820,Y-232,1),
+      new Gem(940,Y-152,0), new Gem(1310,Y-172,2), new Gem(1630,Y-172,0),
+      new Gem(2780,Y-462,-1), new Gem(3250,Y-242,1), new Gem(3790,Y-182,2),
+    ],
+    portal: new Portal(3960,Y-90),
+  };
+}
+function makeLevel13(){
+  const Y=510;
+  return {
+    name:'13-DARAJA: Ikki Rang', worldW:4200, worldH:800,
+    startX:60, startY:Y-80, bg1:'#0c0c04', bg2:'#181808', initColor:0,
+    platforms:[
+      new Platform(0,Y,220,30,-1),
+      new Platform(260,Y-90,90,20,0), new Platform(260,Y-170,90,20,1),
+      new Platform(400,Y-90,90,20,2), new Platform(400,Y-170,90,20,0),
+      new Platform(540,Y-90,90,20,1), new Platform(540,Y-170,90,20,2),
+      new Platform(680,Y,200,30,-1),
+      new Platform(930,Y-100,110,20,0), new Platform(1090,Y-180,110,20,2),
+      new Platform(1250,Y-100,110,20,1), new Platform(1410,Y-180,110,20,0),
+      new Platform(1570,Y,200,30,-1),
+      new Platform(1820,Y-110,100,20,2), new Platform(1970,Y-190,100,20,1),
+      new Platform(2120,Y-270,100,20,0), new Platform(2270,Y-350,100,20,2),
+      new Platform(2420,Y-430,140,20,-1),
+      new Platform(2600,Y-370,100,20,1), new Platform(2750,Y-290,100,20,0),
+      new Platform(2900,Y-210,100,20,2), new Platform(3050,Y-130,100,20,1),
+      new Platform(3200,Y,200,30,-1),
+      new Platform(3450,Y-110,120,20,0), new Platform(3620,Y-190,120,20,2),
+      new Platform(3790,Y-110,120,20,1), new Platform(3960,Y,250,30,-1),
+    ],
+    spikes:[
+      new Spike(220,Y-18,40,-1), new Spike(880,Y-18,50,-1),
+      new Spike(1570,Y-18,50,-1), new Spike(3200,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(280,Y-115,260,660,0), new Enemy(950,Y-125,930,1250,2),
+      new Enemy(1840,Y-135,1820,2120,1), new Enemy(3470,Y-135,3450,3790,0),
+    ],
+    gems:[
+      new Gem(280,Y-142,0), new Gem(280,Y-222,1), new Gem(420,Y-222,0),
+      new Gem(560,Y-222,2), new Gem(950,Y-152,0), new Gem(1110,Y-232,2),
+      new Gem(1840,Y-162,2), new Gem(2290,Y-402,2), new Gem(2440,Y-482,-1),
+      new Gem(3070,Y-182,1), new Gem(3470,Y-162,0), new Gem(3810,Y-162,1),
+    ],
+    portal: new Portal(4050,Y-90),
+  };
+}
+function makeLevel14(){
+  const Y=500;
+  return {
+    name:'14-DARAJA: Tezkor Yo\'l', worldW:4500, worldH:800,
+    startX:60, startY:Y-80, bg1:'#040c18', bg2:'#081828', initColor:2,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(240,Y-80,65,20,2), new Platform(350,Y-80,65,20,0),
+      new Platform(460,Y-80,65,20,1), new Platform(570,Y-80,65,20,2),
+      new Platform(680,Y-80,65,20,0), new Platform(790,Y-80,65,20,1),
+      new Platform(900,Y-80,65,20,2), new Platform(1010,Y,180,30,-1),
+      new Platform(1240,Y-130,110,20,0), new Platform(1400,Y-210,110,20,1),
+      new Platform(1560,Y-290,110,20,2), new Platform(1720,Y-210,110,20,0),
+      new Platform(1880,Y-130,110,20,1), new Platform(2040,Y,200,30,-1),
+      new Platform(2290,Y-100,100,20,2), new Platform(2440,Y-180,100,20,0),
+      new Platform(2590,Y-100,100,20,1), new Platform(2740,Y-180,100,20,2),
+      new Platform(2890,Y-100,100,20,0), new Platform(3040,Y,200,30,-1),
+      new Platform(3290,Y-120,130,20,1), new Platform(3470,Y-220,130,20,2),
+      new Platform(3650,Y-320,130,20,0), new Platform(3830,Y-220,130,20,1),
+      new Platform(4010,Y-120,130,20,2), new Platform(4190,Y,180,30,-1),
+      new Platform(4420,Y-90,100,20,0),
+    ],
+    spikes:[
+      new Spike(200,Y-18,40,-1), new Spike(1010,Y-18,50,-1),
+      new Spike(2040,Y-18,50,-1), new Spike(3040,Y-18,50,-1),
+      new Spike(4180,Y-18,40,-1),
+    ],
+    enemies:[
+      new Enemy(260,Y-105,240,900,2), new Enemy(1260,Y-155,1240,1560,0),
+      new Enemy(2310,Y-125,2290,2590,2), new Enemy(3310,Y-145,3290,3650,1),
+      new Enemy(4030,Y-145,4010,4190,2),
+    ],
+    gems:[
+      new Gem(260,Y-132,2), new Gem(370,Y-132,0), new Gem(480,Y-132,1),
+      new Gem(590,Y-132,2), new Gem(700,Y-132,0), new Gem(1260,Y-182,0),
+      new Gem(1580,Y-342,2), new Gem(1740,Y-262,0), new Gem(2310,Y-152,2),
+      new Gem(3310,Y-172,1), new Gem(3670,Y-372,0), new Gem(4040,Y-172,2),
+    ],
+    portal: new Portal(4430,Y-90),
+  };
+}
+function makeLevel15(){
+  const Y=505;
+  return {
+    name:'15-DARAJA: Yarim Yo\'l!', worldW:4800, worldH:800,
+    startX:60, startY:Y-80, bg1:'#100414', bg2:'#1c0820', initColor:1,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-90,70,20,1), new Platform(340,Y-170,70,20,2), new Platform(460,Y-90,70,20,0),
+      new Platform(580,Y-170,70,20,1), new Platform(700,Y-90,70,20,2), new Platform(820,Y-170,70,20,0),
+      new Platform(940,Y,180,30,-1),
+      new Platform(1180,Y-110,110,20,1), new Platform(1340,Y-190,110,20,0),
+      new Platform(1500,Y-110,110,20,2), new Platform(1660,Y-190,110,20,1),
+      new Platform(1820,Y,200,30,-1),
+      new Platform(2070,Y-100,100,20,2), new Platform(2220,Y-180,100,20,0),
+      new Platform(2370,Y-260,100,20,1), new Platform(2520,Y-340,100,20,2),
+      new Platform(2670,Y-420,140,20,-1),
+      new Platform(2850,Y-360,100,20,0), new Platform(3000,Y-280,100,20,1),
+      new Platform(3150,Y-200,100,20,2), new Platform(3300,Y-120,100,20,0),
+      new Platform(3450,Y,200,30,-1),
+      new Platform(3700,Y-110,110,20,1), new Platform(3860,Y-190,110,20,2),
+      new Platform(4020,Y-270,110,20,0), new Platform(4180,Y-190,110,20,1),
+      new Platform(4340,Y-110,110,20,2), new Platform(4500,Y,180,30,-1),
+      new Platform(4730,Y-80,100,20,0),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(940,Y-18,60,-1),
+      new Spike(1820,Y-18,50,-1), new Spike(3450,Y-18,50,-1),
+      new Spike(4490,Y-18,40,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-115,220,820,1), new Enemy(1200,Y-135,1180,1500,0),
+      new Enemy(2090,Y-125,2070,2370,2), new Enemy(2690,Y-445,2670,2840,-1),
+      new Enemy(3720,Y-135,3700,4020,1), new Enemy(4200,Y-215,4180,4340,1),
+    ],
+    gems:[
+      new Gem(240,Y-142,1), new Gem(360,Y-222,2), new Gem(480,Y-142,0),
+      new Gem(600,Y-222,1), new Gem(720,Y-142,2), new Gem(840,Y-222,0),
+      new Gem(1200,Y-162,1), new Gem(2540,Y-392,2), new Gem(2690,Y-472,-1),
+      new Gem(3700,Y-162,1), new Gem(4040,Y-322,0), new Gem(4750,Y-132,0),
+    ],
+    portal: new Portal(4760,Y-90),
+  };
+}
+function makeLevel16(){
+  const Y=510;
+  return {
+    name:'16-DARAJA: Zulmat', worldW:4000, worldH:800,
+    startX:60, startY:Y-80, bg1:'#020204', bg2:'#040408', initColor:0,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,60,20,0), new Platform(330,Y-160,60,20,1), new Platform(440,Y-80,60,20,2),
+      new Platform(550,Y-160,60,20,0), new Platform(660,Y-80,60,20,1), new Platform(770,Y-160,60,20,2),
+      new Platform(880,Y-80,60,20,0), new Platform(990,Y-160,60,20,1), new Platform(1100,Y,180,30,-1),
+      new Platform(1340,Y-130,110,20,2), new Platform(1500,Y-210,110,20,0),
+      new Platform(1660,Y-130,110,20,1), new Platform(1820,Y-210,110,20,2),
+      new Platform(1980,Y,200,30,-1),
+      new Platform(2230,Y-120,100,20,0), new Platform(2380,Y-200,100,20,1),
+      new Platform(2530,Y-280,100,20,2), new Platform(2680,Y-360,100,20,0),
+      new Platform(2830,Y-440,140,20,-1),
+      new Platform(3010,Y-380,100,20,1), new Platform(3160,Y-300,100,20,2),
+      new Platform(3310,Y-220,100,20,0), new Platform(3460,Y-140,100,20,1),
+      new Platform(3610,Y,200,30,-1),
+      new Platform(3860,Y-100,120,20,2), new Platform(3980,Y,100,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1100,Y-18,60,-1),
+      new Spike(1980,Y-18,50,-1), new Spike(3610,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,1080,0), new Enemy(1360,Y-155,1340,1660,2),
+      new Enemy(2250,Y-145,2230,2530,1), new Enemy(3030,Y-405,3010,3160,-1),
+      new Enemy(3880,Y-125,3860,3980,2),
+    ],
+    gems:[
+      new Gem(240,Y-132,0), new Gem(350,Y-212,1), new Gem(460,Y-132,2),
+      new Gem(570,Y-212,0), new Gem(1360,Y-182,2), new Gem(1680,Y-182,1),
+      new Gem(2250,Y-172,0), new Gem(2700,Y-412,0), new Gem(2850,Y-492,-1),
+      new Gem(3180,Y-352,2), new Gem(3480,Y-192,1), new Gem(3880,Y-152,2),
+    ],
+    portal: new Portal(3970,Y-90),
+  };
+}
+function makeLevel17(){
+  const Y=495;
+  return {
+    name:'17-DARAJA: Uch Rang Sinofi', worldW:4300, worldH:800,
+    startX:60, startY:Y-80, bg1:'#0a0814', bg2:'#14101e', initColor:1,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(240,Y-80,80,20,0), new Platform(240,Y-160,80,20,1), new Platform(240,Y-240,80,20,2),
+      new Platform(370,Y-80,80,20,2), new Platform(370,Y-160,80,20,0), new Platform(370,Y-240,80,20,1),
+      new Platform(500,Y-80,80,20,1), new Platform(500,Y-160,80,20,2), new Platform(500,Y-240,80,20,0),
+      new Platform(630,Y,200,30,-1),
+      new Platform(880,Y-110,110,20,0), new Platform(1040,Y-190,110,20,2),
+      new Platform(1200,Y-110,110,20,1), new Platform(1360,Y-190,110,20,0),
+      new Platform(1520,Y,200,30,-1),
+      new Platform(1770,Y-100,100,20,1), new Platform(1920,Y-180,100,20,2),
+      new Platform(2070,Y-260,100,20,0), new Platform(2220,Y-340,100,20,1),
+      new Platform(2370,Y-420,140,20,-1),
+      new Platform(2550,Y-360,100,20,2), new Platform(2700,Y-280,100,20,0),
+      new Platform(2850,Y-200,100,20,1), new Platform(3000,Y-120,100,20,2),
+      new Platform(3150,Y,200,30,-1),
+      new Platform(3400,Y-130,120,20,0), new Platform(3570,Y-210,120,20,1),
+      new Platform(3740,Y-130,120,20,2), new Platform(3910,Y,200,30,-1),
+      new Platform(4160,Y-80,120,20,0),
+    ],
+    spikes:[
+      new Spike(200,Y-18,40,-1), new Spike(830,Y-18,50,-1),
+      new Spike(1520,Y-18,50,-1), new Spike(3150,Y-18,50,-1),
+      new Spike(3900,Y-18,60,-1),
+    ],
+    enemies:[
+      new Enemy(260,Y-105,240,620,1), new Enemy(900,Y-135,880,1200,0),
+      new Enemy(1790,Y-125,1770,2070,2), new Enemy(2390,Y-445,2370,2540,-1),
+      new Enemy(3420,Y-155,3400,3740,0), new Enemy(4180,Y-105,4160,4300,0),
+    ],
+    gems:[
+      new Gem(260,Y-132,0), new Gem(260,Y-212,1), new Gem(260,Y-292,2),
+      new Gem(390,Y-292,1), new Gem(520,Y-292,0), new Gem(900,Y-162,0),
+      new Gem(2240,Y-392,1), new Gem(2390,Y-472,-1), new Gem(3020,Y-172,2),
+      new Gem(3420,Y-182,0), new Gem(3760,Y-182,2), new Gem(4180,Y-132,0),
+    ],
+    portal: new Portal(4220,Y-90),
+  };
+}
+function makeLevel18(){
+  const Y=505;
+  return {
+    name:'18-DARAJA: Suv Osti', worldW:4600, worldH:800,
+    startX:60, startY:Y-80, bg1:'#020e1a', bg2:'#041420', initColor:2,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(240,Y-90,75,20,2), new Platform(365,Y-165,75,20,0), new Platform(490,Y-90,75,20,1),
+      new Platform(615,Y-165,75,20,2), new Platform(740,Y-90,75,20,0), new Platform(865,Y-165,75,20,1),
+      new Platform(990,Y,200,30,-1),
+      new Platform(1240,Y-120,110,20,2), new Platform(1400,Y-200,110,20,1),
+      new Platform(1560,Y-120,110,20,0), new Platform(1720,Y-200,110,20,2),
+      new Platform(1880,Y,200,30,-1),
+      new Platform(2130,Y-100,95,20,1), new Platform(2275,Y-180,95,20,0),
+      new Platform(2420,Y-260,95,20,2), new Platform(2565,Y-340,95,20,1),
+      new Platform(2710,Y-420,140,20,-1),
+      new Platform(2890,Y-360,95,20,0), new Platform(3035,Y-280,95,20,2),
+      new Platform(3180,Y-200,95,20,1), new Platform(3325,Y-120,95,20,0),
+      new Platform(3470,Y,200,30,-1),
+      new Platform(3720,Y-110,120,20,2), new Platform(3890,Y-190,120,20,0),
+      new Platform(4060,Y-110,120,20,1), new Platform(4230,Y-190,120,20,2),
+      new Platform(4400,Y,200,30,-1),
+    ],
+    spikes:[
+      new Spike(200,Y-18,40,-1), new Spike(990,Y-18,50,-1),
+      new Spike(1880,Y-18,50,-1), new Spike(3470,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(260,Y-115,240,860,2), new Enemy(1260,Y-145,1240,1560,1),
+      new Enemy(2150,Y-125,2130,2420,0), new Enemy(2730,Y-445,2710,2880,-1),
+      new Enemy(3740,Y-135,3720,4060,2), new Enemy(4250,Y-215,4230,4400,2),
+    ],
+    gems:[
+      new Gem(260,Y-142,2), new Gem(385,Y-217,0), new Gem(510,Y-142,1),
+      new Gem(635,Y-217,2), new Gem(760,Y-142,0), new Gem(885,Y-217,1),
+      new Gem(1260,Y-172,2), new Gem(2585,Y-392,1), new Gem(2730,Y-472,-1),
+      new Gem(3200,Y-252,1), new Gem(3740,Y-162,2), new Gem(4080,Y-162,1),
+    ],
+    portal: new Portal(4480,Y-90),
+  };
+}
+function makeLevel19(){
+  const Y=495;
+  return {
+    name:'19-DARAJA: Yulduz Maydon', worldW:4800, worldH:800,
+    startX:60, startY:Y-80, bg1:'#06040e', bg2:'#0c0818', initColor:0,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-70,60,20,0), new Platform(330,Y-140,60,20,1), new Platform(440,Y-210,60,20,2),
+      new Platform(550,Y-140,60,20,0), new Platform(660,Y-70,60,20,1), new Platform(770,Y-140,60,20,2),
+      new Platform(880,Y-210,60,20,0), new Platform(990,Y,200,30,-1),
+      new Platform(1240,Y-110,100,20,1), new Platform(1390,Y-190,100,20,2),
+      new Platform(1540,Y-110,100,20,0), new Platform(1690,Y-190,100,20,1),
+      new Platform(1840,Y,200,30,-1),
+      new Platform(2090,Y-120,110,20,2), new Platform(2250,Y-200,110,20,0),
+      new Platform(2410,Y-280,110,20,1), new Platform(2570,Y-360,110,20,2),
+      new Platform(2730,Y-440,140,20,-1),
+      new Platform(2910,Y-380,110,20,0), new Platform(3070,Y-300,110,20,1),
+      new Platform(3230,Y-220,110,20,2), new Platform(3390,Y-140,110,20,0),
+      new Platform(3550,Y,200,30,-1),
+      new Platform(3800,Y-100,100,20,1), new Platform(3950,Y-180,100,20,2),
+      new Platform(4100,Y-260,100,20,0), new Platform(4250,Y-180,100,20,1),
+      new Platform(4400,Y-100,100,20,2), new Platform(4550,Y,180,30,-1),
+      new Platform(4750,Y-80,80,20,0),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(990,Y-18,50,-1),
+      new Spike(1840,Y-18,50,-1), new Spike(3550,Y-18,50,-1),
+      new Spike(4540,Y-18,40,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-95,220,870,0), new Enemy(1260,Y-135,1240,1540,1),
+      new Enemy(2110,Y-145,2090,2410,2), new Enemy(2750,Y-465,2730,2900,-1),
+      new Enemy(3820,Y-125,3800,4100,1), new Enemy(4120,Y-285,4100,4250,0),
+    ],
+    gems:[
+      new Gem(240,Y-122,0), new Gem(350,Y-192,1), new Gem(460,Y-262,2),
+      new Gem(570,Y-192,0), new Gem(680,Y-122,1), new Gem(790,Y-192,2),
+      new Gem(900,Y-262,0), new Gem(1260,Y-162,1), new Gem(2590,Y-412,2),
+      new Gem(2750,Y-492,-1), new Gem(3800,Y-152,1), new Gem(4120,Y-312,0),
+    ],
+    portal: new Portal(4760,Y-90),
+  };
+}
+function makeLevel20(){
+  const Y=500;
+  return {
+    name:'20-DARAJA: Temir Qal\'a', worldW:5000, worldH:800,
+    startX:60, startY:Y-80, bg1:'#060808', bg2:'#0a0c0c', initColor:1,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(240,Y-80,70,20,0), new Platform(360,Y-160,70,20,1), new Platform(480,Y-80,70,20,2),
+      new Platform(600,Y-160,70,20,0), new Platform(720,Y-80,70,20,1), new Platform(840,Y-160,70,20,2),
+      new Platform(960,Y-80,70,20,0), new Platform(1080,Y,200,30,-1),
+      new Platform(1320,Y-120,110,20,1), new Platform(1480,Y-200,110,20,0),
+      new Platform(1640,Y-120,110,20,2), new Platform(1800,Y-200,110,20,1),
+      new Platform(1960,Y,200,30,-1),
+      new Platform(2210,Y-110,100,20,0), new Platform(2360,Y-190,100,20,2),
+      new Platform(2510,Y-270,100,20,1), new Platform(2660,Y-350,100,20,0),
+      new Platform(2810,Y-430,140,20,-1),
+      new Platform(2990,Y-370,100,20,2), new Platform(3140,Y-290,100,20,1),
+      new Platform(3290,Y-210,100,20,0), new Platform(3440,Y-130,100,20,2),
+      new Platform(3590,Y,200,30,-1),
+      new Platform(3840,Y-110,110,20,1), new Platform(4000,Y-190,110,20,0),
+      new Platform(4160,Y-270,110,20,2), new Platform(4320,Y-190,110,20,1),
+      new Platform(4480,Y-110,110,20,0), new Platform(4640,Y,200,30,-1),
+      new Platform(4890,Y-80,120,20,1),
+    ],
+    spikes:[
+      new Spike(200,Y-18,40,-1), new Spike(1080,Y-18,60,-1),
+      new Spike(1960,Y-18,50,-1), new Spike(3590,Y-18,50,-1),
+      new Spike(4630,Y-18,60,-1),
+    ],
+    enemies:[
+      new Enemy(260,Y-105,240,960,1), new Enemy(1340,Y-145,1320,1640,0),
+      new Enemy(2230,Y-135,2210,2510,2), new Enemy(2830,Y-455,2810,2980,-1),
+      new Enemy(3860,Y-135,3840,4160,1), new Enemy(4180,Y-295,4160,4320,2),
+      new Enemy(4660,Y-30,4640,4900,-1),
+    ],
+    gems:[
+      new Gem(260,Y-132,0), new Gem(380,Y-212,1), new Gem(500,Y-132,2),
+      new Gem(620,Y-212,0), new Gem(1340,Y-172,1), new Gem(1660,Y-172,2),
+      new Gem(2230,Y-162,0), new Gem(2680,Y-402,0), new Gem(2830,Y-482,-1),
+      new Gem(3460,Y-182,2), new Gem(3860,Y-162,1), new Gem(4180,Y-322,2),
+    ],
+    portal: new Portal(4910,Y-90),
+  };
+}
+function makeLevel21(){
+  const Y=505;
+  return {
+    name:'21-DARAJA: Sehrli O\'rmon', worldW:4400, worldH:800,
+    startX:60, startY:Y-80, bg1:'#040c08', bg2:'#081410', initColor:2,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-90,65,20,2), new Platform(335,Y-165,65,20,0), new Platform(450,Y-90,65,20,1),
+      new Platform(565,Y-165,65,20,2), new Platform(680,Y-90,65,20,0), new Platform(795,Y-165,65,20,1),
+      new Platform(910,Y-90,65,20,2), new Platform(1025,Y,200,30,-1),
+      new Platform(1265,Y-125,110,20,0), new Platform(1425,Y-205,110,20,1),
+      new Platform(1585,Y-125,110,20,2), new Platform(1745,Y-205,110,20,0),
+      new Platform(1905,Y,200,30,-1),
+      new Platform(2155,Y-105,95,20,1), new Platform(2300,Y-185,95,20,2),
+      new Platform(2445,Y-265,95,20,0), new Platform(2590,Y-345,95,20,1),
+      new Platform(2735,Y-425,140,20,-1),
+      new Platform(2915,Y-365,95,20,2), new Platform(3060,Y-285,95,20,0),
+      new Platform(3205,Y-205,95,20,1), new Platform(3350,Y-125,95,20,2),
+      new Platform(3495,Y,200,30,-1),
+      new Platform(3745,Y-110,120,20,0), new Platform(3915,Y-190,120,20,1),
+      new Platform(4085,Y-110,120,20,2), new Platform(4255,Y,200,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1025,Y-18,50,-1),
+      new Spike(1905,Y-18,50,-1), new Spike(3495,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-115,220,900,2), new Enemy(1285,Y-150,1265,1585,0),
+      new Enemy(2175,Y-130,2155,2445,1), new Enemy(2755,Y-450,2735,2905,-1),
+      new Enemy(3765,Y-135,3745,4085,0),
+    ],
+    gems:[
+      new Gem(240,Y-142,2), new Gem(355,Y-217,0), new Gem(470,Y-142,1),
+      new Gem(585,Y-217,2), new Gem(700,Y-142,0), new Gem(815,Y-217,1),
+      new Gem(1285,Y-177,0), new Gem(2610,Y-397,1), new Gem(2755,Y-477,-1),
+      new Gem(3225,Y-257,1), new Gem(3765,Y-162,0), new Gem(4105,Y-162,2),
+    ],
+    portal: new Portal(4320,Y-90),
+  };
+}
+function makeLevel22(){
+  const Y=490;
+  return {
+    name:"22-DARAJA: Qoya Ustida", worldW:4600, worldH:800,
+    startX:60, startY:Y-80, bg1:'#0a0804', bg2:'#140c06', initColor:0,
+    platforms:[
+      new Platform(0,Y,200,30,-1),
+      new Platform(240,Y-80,75,20,0), new Platform(365,Y-80,75,20,1), new Platform(490,Y-80,75,20,2),
+      new Platform(615,Y-80,75,20,0), new Platform(740,Y-80,75,20,1), new Platform(865,Y-80,75,20,2),
+      new Platform(990,Y,180,30,-1),
+      new Platform(1220,Y-120,110,20,0), new Platform(1380,Y-200,110,20,2),
+      new Platform(1540,Y-120,110,20,1), new Platform(1700,Y-200,110,20,0),
+      new Platform(1860,Y,200,30,-1),
+      new Platform(2110,Y-100,100,20,2), new Platform(2260,Y-180,100,20,1),
+      new Platform(2410,Y-260,100,20,0), new Platform(2560,Y-340,100,20,2),
+      new Platform(2710,Y-420,140,20,-1),
+      new Platform(2890,Y-360,100,20,1), new Platform(3040,Y-280,100,20,0),
+      new Platform(3190,Y-200,100,20,2), new Platform(3340,Y-120,100,20,1),
+      new Platform(3490,Y,200,30,-1),
+      new Platform(3740,Y-110,120,20,0), new Platform(3910,Y-190,120,20,2),
+      new Platform(4080,Y-270,120,20,1), new Platform(4250,Y-190,120,20,0),
+      new Platform(4420,Y-110,120,20,2), new Platform(4590,Y,80,30,-1),
+    ],
+    spikes:[
+      new Spike(200,Y-18,40,-1), new Spike(1170,Y-18,50,-1),
+      new Spike(1860,Y-18,50,-1), new Spike(3490,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(260,Y-105,240,860,0), new Enemy(1240,Y-145,1220,1540,2),
+      new Enemy(2130,Y-125,2110,2410,1), new Enemy(2730,Y-445,2710,2880,-1),
+      new Enemy(3760,Y-135,3740,4080,0), new Enemy(4100,Y-295,4080,4250,1),
+    ],
+    gems:[
+      new Gem(260,Y-132,0), new Gem(385,Y-132,1), new Gem(510,Y-132,2),
+      new Gem(635,Y-132,0), new Gem(760,Y-132,1), new Gem(1240,Y-172,0),
+      new Gem(1560,Y-172,1), new Gem(2580,Y-392,2), new Gem(2730,Y-472,-1),
+      new Gem(3760,Y-162,0), new Gem(4100,Y-322,1), new Gem(4440,Y-162,2),
+    ],
+    portal: new Portal(4590,Y-90),
+  };
+}
+function makeLevel23(){
+  const Y=500;
+  return {
+    name:'23-DARAJA: Shamol Daryo', worldW:4800, worldH:800,
+    startX:60, startY:Y-80, bg1:'#040a12', bg2:'#081018', initColor:1,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,65,20,1), new Platform(335,Y-160,65,20,2), new Platform(450,Y-80,65,20,0),
+      new Platform(565,Y-160,65,20,1), new Platform(680,Y-80,65,20,2), new Platform(795,Y-160,65,20,0),
+      new Platform(910,Y-80,65,20,1), new Platform(1025,Y-160,65,20,2), new Platform(1140,Y,200,30,-1),
+      new Platform(1380,Y-130,110,20,1), new Platform(1540,Y-210,110,20,0),
+      new Platform(1700,Y-130,110,20,2), new Platform(1860,Y-210,110,20,1),
+      new Platform(2020,Y,200,30,-1),
+      new Platform(2270,Y-110,100,20,0), new Platform(2420,Y-190,100,20,2),
+      new Platform(2570,Y-270,100,20,1), new Platform(2720,Y-350,100,20,0),
+      new Platform(2870,Y-430,140,20,-1),
+      new Platform(3050,Y-370,100,20,2), new Platform(3200,Y-290,100,20,1),
+      new Platform(3350,Y-210,100,20,0), new Platform(3500,Y-130,100,20,2),
+      new Platform(3650,Y,200,30,-1),
+      new Platform(3900,Y-110,110,20,1), new Platform(4060,Y-190,110,20,0),
+      new Platform(4220,Y-270,110,20,2), new Platform(4380,Y-190,110,20,1),
+      new Platform(4540,Y-110,110,20,0), new Platform(4700,Y,140,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1140,Y-18,60,-1),
+      new Spike(2020,Y-18,50,-1), new Spike(3650,Y-18,50,-1),
+      new Spike(4690,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,1020,1), new Enemy(1400,Y-155,1380,1700,0),
+      new Enemy(2290,Y-135,2270,2570,2), new Enemy(2890,Y-455,2870,3040,-1),
+      new Enemy(3920,Y-135,3900,4220,1), new Enemy(4240,Y-295,4220,4380,2),
+    ],
+    gems:[
+      new Gem(240,Y-132,1), new Gem(355,Y-212,2), new Gem(470,Y-132,0),
+      new Gem(585,Y-212,1), new Gem(700,Y-132,2), new Gem(815,Y-212,0),
+      new Gem(930,Y-132,1), new Gem(1400,Y-182,0), new Gem(2740,Y-402,0),
+      new Gem(2890,Y-482,-1), new Gem(3920,Y-162,1), new Gem(4240,Y-322,2),
+    ],
+    portal: new Portal(4740,Y-90),
+  };
+}
+function makeLevel24(){
+  const Y=495;
+  return {
+    name:'24-DARAJA: Cheksiz Ko\'k', worldW:5000, worldH:800,
+    startX:60, startY:Y-80, bg1:'#020814', bg2:'#040e1e', initColor:2,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-90,70,20,2), new Platform(340,Y-170,70,20,0), new Platform(460,Y-90,70,20,1),
+      new Platform(580,Y-170,70,20,2), new Platform(700,Y-90,70,20,0), new Platform(820,Y-170,70,20,1),
+      new Platform(940,Y-90,70,20,2), new Platform(1060,Y,200,30,-1),
+      new Platform(1300,Y-120,110,20,0), new Platform(1460,Y-200,110,20,2),
+      new Platform(1620,Y-120,110,20,1), new Platform(1780,Y-200,110,20,0),
+      new Platform(1940,Y,200,30,-1),
+      new Platform(2190,Y-110,100,20,2), new Platform(2340,Y-190,100,20,1),
+      new Platform(2490,Y-270,100,20,0), new Platform(2640,Y-350,100,20,2),
+      new Platform(2790,Y-430,140,20,-1),
+      new Platform(2970,Y-370,100,20,1), new Platform(3120,Y-290,100,20,0),
+      new Platform(3270,Y-210,100,20,2), new Platform(3420,Y-130,100,20,1),
+      new Platform(3570,Y,200,30,-1),
+      new Platform(3820,Y-110,110,20,0), new Platform(3980,Y-190,110,20,2),
+      new Platform(4140,Y-270,110,20,1), new Platform(4300,Y-190,110,20,0),
+      new Platform(4460,Y-110,110,20,2), new Platform(4620,Y,200,30,-1),
+      new Platform(4880,Y-80,130,20,1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1060,Y-18,60,-1),
+      new Spike(1940,Y-18,50,-1), new Spike(3570,Y-18,50,-1),
+      new Spike(4610,Y-18,70,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-115,220,940,2), new Enemy(1320,Y-145,1300,1620,0),
+      new Enemy(2210,Y-135,2190,2490,1), new Enemy(2810,Y-455,2790,2960,-1),
+      new Enemy(3840,Y-135,3820,4140,0), new Enemy(4160,Y-295,4140,4300,2),
+      new Enemy(4640,Y-30,4620,4900,-1),
+    ],
+    gems:[
+      new Gem(240,Y-142,2), new Gem(360,Y-222,0), new Gem(480,Y-142,1),
+      new Gem(600,Y-222,2), new Gem(720,Y-142,0), new Gem(840,Y-222,1),
+      new Gem(1320,Y-172,0), new Gem(2660,Y-402,2), new Gem(2810,Y-482,-1),
+      new Gem(3840,Y-162,0), new Gem(4160,Y-322,1), new Gem(4900,Y-132,1),
+    ],
+    portal: new Portal(4940,Y-90),
+  };
+}
+function makeLevel25(){
+  const Y=500;
+  return {
+    name:'25-DARAJA: Buyuk Sinov', worldW:5200, worldH:800,
+    startX:60, startY:Y-80, bg1:'#0e0604', bg2:'#180a06', initColor:0,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,60,20,0), new Platform(330,Y-160,60,20,1), new Platform(440,Y-80,60,20,2),
+      new Platform(550,Y-160,60,20,0), new Platform(660,Y-80,60,20,1), new Platform(770,Y-160,60,20,2),
+      new Platform(880,Y-80,60,20,0), new Platform(990,Y-160,60,20,1), new Platform(1100,Y,200,30,-1),
+      new Platform(1340,Y-130,110,20,2), new Platform(1500,Y-210,110,20,0),
+      new Platform(1660,Y-130,110,20,1), new Platform(1820,Y-210,110,20,2),
+      new Platform(1980,Y,200,30,-1),
+      new Platform(2230,Y-120,100,20,0), new Platform(2380,Y-200,100,20,1),
+      new Platform(2530,Y-280,100,20,2), new Platform(2680,Y-360,100,20,0),
+      new Platform(2830,Y-440,140,20,-1),
+      new Platform(3010,Y-380,100,20,2), new Platform(3160,Y-300,100,20,1),
+      new Platform(3310,Y-220,100,20,0), new Platform(3460,Y-140,100,20,2),
+      new Platform(3610,Y,200,30,-1),
+      new Platform(3860,Y-110,100,20,1), new Platform(4010,Y-190,100,20,0),
+      new Platform(4160,Y-270,100,20,2), new Platform(4310,Y-350,100,20,1),
+      new Platform(4460,Y-430,140,20,-1),
+      new Platform(4640,Y-370,100,20,0), new Platform(4790,Y-290,100,20,2),
+      new Platform(4940,Y-210,100,20,1), new Platform(5090,Y-130,100,20,0),
+      new Platform(5150,Y,100,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1100,Y-18,60,-1),
+      new Spike(1980,Y-18,50,-1), new Spike(3610,Y-18,50,-1),
+      new Spike(5140,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,980,0), new Enemy(1360,Y-155,1340,1660,2),
+      new Enemy(2250,Y-145,2230,2530,1), new Enemy(2850,Y-465,2830,3000,-1),
+      new Enemy(3880,Y-135,3860,4160,1), new Enemy(4480,Y-455,4460,4630,-1),
+      new Enemy(5110,Y-155,5090,5150,0),
+    ],
+    gems:[
+      new Gem(240,Y-132,0), new Gem(350,Y-212,1), new Gem(460,Y-132,2),
+      new Gem(1360,Y-182,2), new Gem(1680,Y-182,1), new Gem(2250,Y-172,0),
+      new Gem(2700,Y-412,0), new Gem(2850,Y-492,-1), new Gem(3480,Y-192,2),
+      new Gem(3880,Y-162,1), new Gem(4480,Y-482,-1), new Gem(5110,Y-182,0),
+    ],
+    portal: new Portal(5140,Y-90),
+  };
+}
+function makeLevel26(){
+  const Y=490;
+  return {
+    name:'26-DARAJA: Abadiy Tun', worldW:4600, worldH:800,
+    startX:60, startY:Y-80, bg1:'#010102', bg2:'#020204', initColor:1,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-90,65,20,1), new Platform(335,Y-170,65,20,0), new Platform(450,Y-90,65,20,2),
+      new Platform(565,Y-170,65,20,1), new Platform(680,Y-90,65,20,0), new Platform(795,Y-170,65,20,2),
+      new Platform(910,Y-90,65,20,1), new Platform(1025,Y-170,65,20,0), new Platform(1140,Y,200,30,-1),
+      new Platform(1380,Y-120,110,20,2), new Platform(1540,Y-200,110,20,1),
+      new Platform(1700,Y-120,110,20,0), new Platform(1860,Y-200,110,20,2),
+      new Platform(2020,Y,200,30,-1),
+      new Platform(2270,Y-110,100,20,1), new Platform(2420,Y-190,100,20,0),
+      new Platform(2570,Y-270,100,20,2), new Platform(2720,Y-350,100,20,1),
+      new Platform(2870,Y-430,140,20,-1),
+      new Platform(3050,Y-370,100,20,0), new Platform(3200,Y-290,100,20,2),
+      new Platform(3350,Y-210,100,20,1), new Platform(3500,Y-130,100,20,0),
+      new Platform(3650,Y,200,30,-1),
+      new Platform(3900,Y-110,120,20,2), new Platform(4070,Y-190,120,20,1),
+      new Platform(4240,Y-270,120,20,0), new Platform(4410,Y-190,120,20,2),
+      new Platform(4580,Y,80,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1140,Y-18,60,-1),
+      new Spike(2020,Y-18,50,-1), new Spike(3650,Y-18,50,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-115,220,1020,1), new Enemy(1400,Y-145,1380,1700,2),
+      new Enemy(2290,Y-135,2270,2570,0), new Enemy(2890,Y-455,2870,3040,-1),
+      new Enemy(3920,Y-135,3900,4240,2), new Enemy(4260,Y-295,4240,4410,1),
+    ],
+    gems:[
+      new Gem(240,Y-142,1), new Gem(355,Y-222,0), new Gem(470,Y-142,2),
+      new Gem(585,Y-222,1), new Gem(700,Y-142,0), new Gem(815,Y-222,2),
+      new Gem(1400,Y-172,2), new Gem(2740,Y-402,1), new Gem(2890,Y-482,-1),
+      new Gem(3920,Y-162,2), new Gem(4260,Y-322,1), new Gem(4430,Y-242,2),
+    ],
+    portal: new Portal(4570,Y-90),
+  };
+}
+function makeLevel27(){
+  const Y=495;
+  return {
+    name:"27-DARAJA: So'nggi Tog'", worldW:5000, worldH:800,
+    startX:60, startY:Y-80, bg1:'#080410', bg2:'#100618', initColor:2,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,65,20,2), new Platform(335,Y-160,65,20,0), new Platform(450,Y-80,65,20,1),
+      new Platform(565,Y-160,65,20,2), new Platform(680,Y-80,65,20,0), new Platform(795,Y-160,65,20,1),
+      new Platform(910,Y,200,30,-1),
+      new Platform(1150,Y-120,100,20,2), new Platform(1300,Y-200,100,20,0),
+      new Platform(1450,Y-120,100,20,1), new Platform(1600,Y-200,100,20,2),
+      new Platform(1750,Y,200,30,-1),
+      new Platform(2000,Y-110,100,20,0), new Platform(2150,Y-190,100,20,1),
+      new Platform(2300,Y-270,100,20,2), new Platform(2450,Y-350,100,20,0),
+      new Platform(2600,Y-430,140,20,-1),
+      new Platform(2780,Y-370,100,20,1), new Platform(2930,Y-290,100,20,2),
+      new Platform(3080,Y-210,100,20,0), new Platform(3230,Y-130,100,20,1),
+      new Platform(3380,Y,200,30,-1),
+      new Platform(3630,Y-110,110,20,2), new Platform(3790,Y-190,110,20,0),
+      new Platform(3950,Y-270,110,20,1), new Platform(4110,Y-350,110,20,2),
+      new Platform(4270,Y-430,140,20,-1),
+      new Platform(4450,Y-370,110,20,0), new Platform(4610,Y-290,110,20,1),
+      new Platform(4770,Y-210,110,20,2), new Platform(4930,Y,120,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1100,Y-18,50,-1),
+      new Spike(1750,Y-18,50,-1), new Spike(3380,Y-18,50,-1),
+      new Spike(4920,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,790,2), new Enemy(1170,Y-145,1150,1450,0),
+      new Enemy(2020,Y-135,2000,2300,1), new Enemy(2620,Y-455,2600,2770,-1),
+      new Enemy(3650,Y-135,3630,3950,2), new Enemy(4290,Y-455,4270,4440,-1),
+      new Enemy(4790,Y-235,4770,4930,2),
+    ],
+    gems:[
+      new Gem(240,Y-132,2), new Gem(355,Y-212,0), new Gem(470,Y-132,1),
+      new Gem(1170,Y-172,2), new Gem(2020,Y-162,0), new Gem(2470,Y-402,0),
+      new Gem(2620,Y-482,-1), new Gem(3650,Y-162,2), new Gem(3970,Y-322,1),
+      new Gem(4290,Y-482,-1), new Gem(4630,Y-342,1), new Gem(4790,Y-262,2),
+    ],
+    portal: new Portal(4950,Y-90),
+  };
+}
+function makeLevel28(){
+  const Y=500;
+  return {
+    name:'28-DARAJA: Alov Va Muz', worldW:5200, worldH:800,
+    startX:60, startY:Y-80, bg1:'#100404', bg2:'#180606', initColor:0,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,65,20,0), new Platform(335,Y-160,65,20,2), new Platform(450,Y-80,65,20,1),
+      new Platform(565,Y-160,65,20,0), new Platform(680,Y-80,65,20,2), new Platform(795,Y-160,65,20,1),
+      new Platform(910,Y-80,65,20,0), new Platform(1025,Y-160,65,20,2), new Platform(1140,Y,200,30,-1),
+      new Platform(1380,Y-130,110,20,1), new Platform(1540,Y-210,110,20,0),
+      new Platform(1700,Y-130,110,20,2), new Platform(1860,Y-210,110,20,1),
+      new Platform(2020,Y,200,30,-1),
+      new Platform(2270,Y-120,100,20,0), new Platform(2420,Y-200,100,20,2),
+      new Platform(2570,Y-280,100,20,1), new Platform(2720,Y-360,100,20,0),
+      new Platform(2870,Y-440,140,20,-1),
+      new Platform(3050,Y-380,100,20,2), new Platform(3200,Y-300,100,20,1),
+      new Platform(3350,Y-220,100,20,0), new Platform(3500,Y-140,100,20,2),
+      new Platform(3650,Y,200,30,-1),
+      new Platform(3900,Y-110,100,20,1), new Platform(4050,Y-190,100,20,0),
+      new Platform(4200,Y-270,100,20,2), new Platform(4350,Y-350,100,20,1),
+      new Platform(4500,Y-430,140,20,-1),
+      new Platform(4680,Y-370,100,20,0), new Platform(4830,Y-290,100,20,2),
+      new Platform(4980,Y-210,100,20,1), new Platform(5130,Y-130,100,20,0),
+      new Platform(5200,Y,80,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1140,Y-18,60,-1),
+      new Spike(2020,Y-18,50,-1), new Spike(3650,Y-18,50,-1),
+      new Spike(5190,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,1020,0), new Enemy(1400,Y-155,1380,1700,1),
+      new Enemy(2290,Y-145,2270,2570,2), new Enemy(2890,Y-465,2870,3040,-1),
+      new Enemy(3920,Y-135,3900,4200,1), new Enemy(4520,Y-455,4500,4670,-1),
+      new Enemy(5150,Y-155,5130,5200,0), new Enemy(4202,Y-295,4200,4350,2),
+    ],
+    gems:[
+      new Gem(240,Y-132,0), new Gem(355,Y-212,2), new Gem(470,Y-132,1),
+      new Gem(1400,Y-182,1), new Gem(1720,Y-182,2), new Gem(2290,Y-172,0),
+      new Gem(2740,Y-412,0), new Gem(2890,Y-492,-1), new Gem(3520,Y-192,2),
+      new Gem(3920,Y-162,1), new Gem(4520,Y-482,-1), new Gem(5150,Y-182,0),
+    ],
+    portal: new Portal(5190,Y-90),
+  };
+}
+function makeLevel29(){
+  const Y=495;
+  return {
+    name:'29-DARAJA: Osmon Tomoni', worldW:5400, worldH:800,
+    startX:60, startY:Y-80, bg1:'#060410', bg2:'#0c0818', initColor:1,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,60,20,1), new Platform(330,Y-160,60,20,2), new Platform(440,Y-80,60,20,0),
+      new Platform(550,Y-160,60,20,1), new Platform(660,Y-80,60,20,2), new Platform(770,Y-160,60,20,0),
+      new Platform(880,Y-80,60,20,1), new Platform(990,Y-160,60,20,2), new Platform(1100,Y-80,60,20,0),
+      new Platform(1210,Y,200,30,-1),
+      new Platform(1450,Y-130,110,20,1), new Platform(1610,Y-210,110,20,0),
+      new Platform(1770,Y-130,110,20,2), new Platform(1930,Y-210,110,20,1),
+      new Platform(2090,Y,200,30,-1),
+      new Platform(2340,Y-120,100,20,0), new Platform(2490,Y-200,100,20,2),
+      new Platform(2640,Y-280,100,20,1), new Platform(2790,Y-360,100,20,0),
+      new Platform(2940,Y-440,140,20,-1),
+      new Platform(3120,Y-380,100,20,2), new Platform(3270,Y-300,100,20,1),
+      new Platform(3420,Y-220,100,20,0), new Platform(3570,Y-140,100,20,2),
+      new Platform(3720,Y,200,30,-1),
+      new Platform(3970,Y-110,110,20,1), new Platform(4130,Y-190,110,20,0),
+      new Platform(4290,Y-270,110,20,2), new Platform(4450,Y-350,110,20,1),
+      new Platform(4610,Y-430,140,20,-1),
+      new Platform(4790,Y-370,110,20,0), new Platform(4950,Y-290,110,20,2),
+      new Platform(5110,Y-210,110,20,1), new Platform(5270,Y-130,110,20,0),
+      new Platform(5350,Y,120,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1210,Y-18,60,-1),
+      new Spike(2090,Y-18,50,-1), new Spike(3720,Y-18,50,-1),
+      new Spike(5340,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,1090,1), new Enemy(1470,Y-155,1450,1770,0),
+      new Enemy(2360,Y-145,2340,2640,2), new Enemy(2960,Y-465,2940,3110,-1),
+      new Enemy(3990,Y-135,3970,4290,1), new Enemy(4630,Y-455,4610,4780,-1),
+      new Enemy(4810,Y-395,4790,4950,0), new Enemy(5130,Y-235,5110,5270,1),
+    ],
+    gems:[
+      new Gem(240,Y-132,1), new Gem(350,Y-212,2), new Gem(460,Y-132,0),
+      new Gem(1470,Y-182,0), new Gem(2360,Y-172,2), new Gem(2810,Y-412,0),
+      new Gem(2960,Y-492,-1), new Gem(3990,Y-162,1), new Gem(4310,Y-322,2),
+      new Gem(4630,Y-482,-1), new Gem(4810,Y-422,0), new Gem(5130,Y-262,1),
+    ],
+    portal: new Portal(5360,Y-90),
+  };
+}
+function makeLevel30(){
+  const Y=490;
+  return {
+    name:"30-DARAJA: So'nggi Sinov!", worldW:5600, worldH:800,
+    startX:60, startY:Y-80, bg1:'#08040c', bg2:'#120618', initColor:0,
+    platforms:[
+      new Platform(0,Y,180,30,-1),
+      new Platform(220,Y-80,60,20,0), new Platform(330,Y-160,60,20,1), new Platform(440,Y-80,60,20,2),
+      new Platform(550,Y-160,60,20,0), new Platform(660,Y-80,60,20,1), new Platform(770,Y-160,60,20,2),
+      new Platform(880,Y-80,60,20,0), new Platform(990,Y-160,60,20,1), new Platform(1100,Y-80,60,20,2),
+      new Platform(1210,Y-160,60,20,0), new Platform(1320,Y,200,30,-1),
+      new Platform(1560,Y-130,110,20,1), new Platform(1720,Y-210,110,20,2),
+      new Platform(1880,Y-130,110,20,0), new Platform(2040,Y-210,110,20,1),
+      new Platform(2200,Y,200,30,-1),
+      new Platform(2450,Y-120,100,20,2), new Platform(2600,Y-200,100,20,0),
+      new Platform(2750,Y-280,100,20,1), new Platform(2900,Y-360,100,20,2),
+      new Platform(3050,Y-440,140,20,-1),
+      new Platform(3230,Y-380,100,20,0), new Platform(3380,Y-300,100,20,1),
+      new Platform(3530,Y-220,100,20,2), new Platform(3680,Y-140,100,20,0),
+      new Platform(3830,Y,200,30,-1),
+      new Platform(4080,Y-110,110,20,1), new Platform(4240,Y-190,110,20,2),
+      new Platform(4400,Y-270,110,20,0), new Platform(4560,Y-350,110,20,1),
+      new Platform(4720,Y-430,140,20,-1),
+      new Platform(4900,Y-370,110,20,2), new Platform(5060,Y-290,110,20,0),
+      new Platform(5220,Y-210,110,20,1), new Platform(5380,Y-130,110,20,2),
+      new Platform(5450,Y,180,30,-1),
+    ],
+    spikes:[
+      new Spike(180,Y-18,40,-1), new Spike(1320,Y-18,60,-1),
+      new Spike(2200,Y-18,60,-1), new Spike(3830,Y-18,60,-1),
+      new Spike(5440,Y-18,10,-1),
+    ],
+    enemies:[
+      new Enemy(240,Y-105,220,1200,0), new Enemy(1580,Y-155,1560,1880,1),
+      new Enemy(2470,Y-145,2450,2750,2), new Enemy(3070,Y-465,3050,3220,-1),
+      new Enemy(4100,Y-135,4080,4400,1), new Enemy(4740,Y-455,4720,4890,-1),
+      new Enemy(4920,Y-395,4900,5060,2), new Enemy(5240,Y-235,5220,5380,1),
+      new Enemy(1750,Y-235,1720,2040,2),
+    ],
+    gems:[
+      new Gem(240,Y-132,0), new Gem(350,Y-212,1), new Gem(460,Y-132,2),
+      new Gem(570,Y-212,0), new Gem(1580,Y-182,1), new Gem(2470,Y-172,2),
+      new Gem(2920,Y-412,2), new Gem(3070,Y-492,-1), new Gem(4100,Y-162,1),
+      new Gem(4420,Y-322,0), new Gem(4740,Y-482,-1), new Gem(5240,Y-262,1),
+    ],
+    portal: new Portal(5470,Y-90),
+  };
+}
+
+const LEVEL_FACTORIES = [
+  makeLevel1,makeLevel2,makeLevel3,makeLevel4,makeLevel5,makeLevel6,makeLevel7,
+  makeLevel8,makeLevel9,makeLevel10,makeLevel11,makeLevel12,makeLevel13,makeLevel14,
+  makeLevel15,makeLevel16,makeLevel17,makeLevel18,makeLevel19,makeLevel20,
+  makeLevel21,makeLevel22,makeLevel23,makeLevel24,makeLevel25,makeLevel26,
+  makeLevel27,makeLevel28,makeLevel29,makeLevel30
+];
 const LEVEL_INFO = [
   {icon:'🌟', sub:'Salom Dunyo!'},
   {icon:'🌀', sub:'Rang Labirinti'},
   {icon:'🔥', sub:'Oxirgi Sinov'},
+  {icon:'💙', sub:"Ko'k Yo'l"},
+  {icon:'❤️', sub:'Qizil Maydon'},
+  {icon:'💚', sub:"Yashil O'rmon"},
+  {icon:'🏔️', sub:"Muzli Tog'"},
+  {icon:'🌊', sub:'Rang Daryo'},
+  {icon:'🌑', sub:"Qorong'u Voha"},
+  {icon:'🪐', sub:'Yarim Dunyo'},
+  {icon:'🔮', sub:'Rang Portali'},
+  {icon:'⚡', sub:"Chaqmoq Yo'li"},
+  {icon:'🎨', sub:'Ikki Rang'},
+  {icon:'🚀', sub:"Tezkor Yo'l"},
+  {icon:'🌈', sub:'Yarim Yo\'l!'},
+  {icon:'🕶️', sub:'Zulmat'},
+  {icon:'🎯', sub:'Uch Rang Sinofi'},
+  {icon:'🐠', sub:'Suv Osti'},
+  {icon:'⭐', sub:'Yulduz Maydon'},
+  {icon:'🏰', sub:"Temir Qal'a"},
+  {icon:'🌿', sub:"Sehrli O'rmon"},
+  {icon:'🪨', sub:'Qoya Ustida'},
+  {icon:'💨', sub:'Shamol Daryo'},
+  {icon:'🌐', sub:"Cheksiz Ko'k"},
+  {icon:'🏆', sub:'Buyuk Sinov'},
+  {icon:'🌙', sub:'Abadiy Tun'},
+  {icon:'⛰️', sub:"So'nggi Tog'"},
+  {icon:'🔥', sub:'Alov Va Muz'},
+  {icon:'☁️', sub:'Osmon Tomoni'},
+  {icon:'👑', sub:"So'nggi Sinov!"},
 ];
-let currentLevel;
 
 // ─── BOSHQARUV ────────────────────────────────────────────
 function loadLevel(index){
@@ -715,9 +1862,17 @@ function calcBtns(){
 
   // Daraja tanlash
   BTNS.back = {x:10, y:10, w:88, h:36};
-  const cW = Math.min(W*0.88, 360), cH = Math.min(H*0.2, 148);
+  const cW = Math.min(W*0.88, 360), cH = Math.min(H*0.083, 58);
   const cX = (W-cW)/2;
-  BTNS.cards = [0,1,2].map(i => ({x:cX, y:H*0.25+i*(cH+12), w:cW, h:cH, idx:i}));
+  const pageStart = levelPage * 10;
+  BTNS.cards = [];
+  for (let i=0; i<10; i++){
+    BTNS.cards.push({x:cX, y:H*0.18+i*(cH+5), w:cW, h:cH, idx:pageStart+i});
+  }
+  const navW = Math.min(140, W*0.38), navH = Math.min(36, H*0.05);
+  const navY = H - navH - 10;
+  BTNS.pgPrev = {x:(W/2-navW-6), y:navY, w:navW, h:navH};
+  BTNS.pgNext = {x:(W/2+6),      y:navY, w:navW, h:navH};
 
   // Pauza menyu
   const pW = Math.min(260, W*0.72), pH = 52, pX = (W-pW)/2, pY0 = H*0.38;
@@ -775,9 +1930,11 @@ canvas.addEventListener('touchstart', function(e){
   // ─ Daraja tanlash
   if (state === 'levels'){
     if (inRect(BTNS.back, x, y, 10)){ playSFX('tap'); state='menu'; return; }
+    if (inRect(BTNS.pgPrev, x, y, 8) && levelPage>0){ playSFX('tap'); levelPage--; calcBtns(); return; }
+    if (inRect(BTNS.pgNext, x, y, 8) && levelPage<2){ playSFX('tap'); levelPage++; calcBtns(); return; }
     for (const card of BTNS.cards){
       if (inRect(card, x, y, 8)){
-        if (card.idx <= unlockedLvl){ playSFX('tap'); score=0; lives=5; startLevel(card.idx); }
+        if (card.idx <= unlockedLvl && card.idx < LEVEL_FACTORIES.length){ playSFX('tap'); score=0; lives=5; startLevel(card.idx); }
         return;
       }
     }
@@ -828,7 +1985,7 @@ function refreshMovement(touches){
 window.addEventListener('keydown', function(e){
   if (!audioCtx){ initAudio(); startBGM(); }
   if (state==='menu')   { startGame(); return; }
-  if (state==='levels') { if(e.key==='Escape') state='menu'; return; }
+  if (state==='levels') { if(e.key==='Escape') state='menu'; if(e.key==='ArrowRight'&&levelPage<2){levelPage++;calcBtns();} if(e.key==='ArrowLeft'&&levelPage>0){levelPage--;calcBtns();} return; }
   if (state==='paused') { if(['Escape','p','P'].includes(e.key)) state='playing'; return; }
   if (state==='complete'){ startLevel(levelIndex); return; }
   if (state==='over'||state==='win'){ state='menu'; return; }
@@ -979,53 +2136,64 @@ function drawLevelSelect(){
 
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#fff'; ctx.shadowColor='#aabbff'; ctx.shadowBlur=14;
-  ctx.font = `bold ${Math.min(W*0.065,26)}px Arial`;
-  ctx.fillText('📋  DARAJALAR', W/2, H*0.135);
-  ctx.shadowBlur = 0;
+  ctx.font = `bold ${Math.min(W*0.058,22)}px Arial`;
+  ctx.fillText('📋  DARAJALAR', W/2, H*0.1);
+  ctx.shadowBlur=0;
+
+  // Sahifa ko'rsatgich
+  const pageColStart = ['#ff3355','#33ff88','#3388ff'][levelPage];
+  ctx.font = `${Math.min(W*0.036,13)}px Arial`;
+  ctx.fillStyle = pageColStart;
+  ctx.fillText(`${levelPage*10+1}–${levelPage*10+10} / 30`, W/2, H*0.148);
+
+  const worldCols = ['#ff3355','#33ff88','#3388ff'];
 
   for (const card of BTNS.cards){
+    if (card.idx >= LEVEL_FACTORIES.length) continue;
     const info   = LEVEL_INFO[card.idx];
     const locked = card.idx > unlockedLvl;
-    const col    = COLORS[card.idx];
+    const col    = worldCols[levelPage];
     ctx.save();
     const cg = ctx.createLinearGradient(card.x,card.y,card.x,card.y+card.h);
-    cg.addColorStop(0, locked ? '#0e0e20' : col+'1a');
-    cg.addColorStop(1, locked ? '#080818' : '#050512');
-    ctx.fillStyle = cg; ctx.shadowColor = locked?'#333':col; ctx.shadowBlur = locked?0:14;
-    ctx.beginPath(); ctx.roundRect(card.x,card.y,card.w,card.h,16); ctx.fill();
-    ctx.strokeStyle = locked?'#2a2a44':col; ctx.lineWidth = locked?1:2; ctx.stroke();
+    cg.addColorStop(0, locked ? '#0d0d1c' : col+'1a');
+    cg.addColorStop(1, locked ? '#070714' : '#050510');
+    ctx.fillStyle = cg; ctx.shadowColor = locked?'#222':col; ctx.shadowBlur = locked?0:10;
+    ctx.beginPath(); ctx.roundRect(card.x,card.y,card.w,card.h,10); ctx.fill();
+    ctx.strokeStyle = locked?'#252540':col; ctx.lineWidth = locked?1:1.5; ctx.stroke();
 
     if (!locked){
       ctx.fillStyle = col; ctx.shadowBlur=0;
-      ctx.beginPath(); ctx.roundRect(card.x,card.y+8,5,card.h-16,4); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(card.x,card.y+4,4,card.h-8,3); ctx.fill();
     }
 
     ctx.shadowBlur=0; ctx.textAlign='left'; ctx.textBaseline='middle';
-    const iconSz = Math.min(card.h*0.52, 42);
+    const iconSz = Math.min(card.h*0.55, 26);
     ctx.font = `${iconSz}px Arial`;
-    ctx.fillStyle = locked?'#333':col;
-    ctx.fillText(info.icon, card.x+18, card.y+card.h/2-6);
+    ctx.fillStyle = locked?'#2a2a3a':col;
+    ctx.fillText(info.icon, card.x+12, card.y+card.h/2);
 
-    ctx.font = `bold ${Math.min(card.h*0.28,22)}px Arial`;
-    ctx.fillStyle = locked?'#444':'#fff';
-    ctx.fillText(`${card.idx+1}-DARAJA`, card.x+72, card.y+card.h*0.37);
-
-    ctx.font = `${Math.min(card.h*0.2,15)}px Arial`;
-    ctx.fillStyle = locked?'#3a3a55':'#8899bb';
-    ctx.fillText(info.sub, card.x+72, card.y+card.h*0.63);
+    ctx.font = `bold ${Math.min(card.h*0.36,17)}px Arial`;
+    ctx.fillStyle = locked?'#3a3a55':'#fff';
+    ctx.fillText(`${card.idx+1}. ${info.sub}`, card.x+46, card.y+card.h/2);
 
     ctx.textAlign='right';
     if (locked){
-      ctx.font = `${Math.min(card.h*0.5,40)}px Arial`;
-      ctx.fillStyle='#333444';
-      ctx.fillText('🔒', card.x+card.w-16, card.y+card.h/2);
+      ctx.font = `${Math.min(card.h*0.5,22)}px Arial`;
+      ctx.fillStyle='#2a2a3a';
+      ctx.fillText('🔒', card.x+card.w-12, card.y+card.h/2);
     } else {
-      ctx.font = `bold ${Math.min(card.h*0.27,21)}px Arial`;
-      ctx.fillStyle = col;
-      ctx.fillText("O'YNASH ▶", card.x+card.w-16, card.y+card.h/2);
+      ctx.font = `bold ${Math.min(card.h*0.32,15)}px Arial`;
+      ctx.fillStyle=col;
+      ctx.fillText('▶', card.x+card.w-12, card.y+card.h/2);
     }
     ctx.restore();
   }
+
+  // Prev / Next tugmalari
+  const pCol = levelPage>0 ? worldCols[levelPage-1] : C_NEUTRAL;
+  const nCol = levelPage<2 ? worldCols[Math.min(levelPage+1,2)] : C_NEUTRAL;
+  drawRoundBtn(BTNS.pgPrev, '◀ Oldingi', pCol, false, Math.min(BTNS.pgPrev.h*0.48,15));
+  drawRoundBtn(BTNS.pgNext, 'Keyingi ▶', nCol, false, Math.min(BTNS.pgNext.h*0.48,15));
 }
 
 function drawHUD(){
@@ -1039,7 +2207,9 @@ function drawHUD(){
 
   ctx.textAlign='center'; ctx.fillStyle='#ffee88';
   ctx.font = `bold ${Math.min(14,W*0.035)}px Arial`;
-  ctx.fillText(`⭐ ${score}`, W/2, 25);
+  ctx.fillText(`⭐ ${score}`, W/2, 18);
+  ctx.fillStyle='#aabbdd'; ctx.font=`${Math.min(10,W*0.025)}px Arial`;
+  ctx.fillText(`${levelIndex+1}/30`, W/2, 34);
 
   drawRoundBtn(BTNS.pauseBtn, '⏸', C_NEUTRAL, false, Math.min(BTNS.pauseBtn.h*0.5,18));
 
@@ -1249,7 +2419,7 @@ function render(){
   // Yakuniy ekranlar
   if (state==='complete') drawEndScreen('🎉 DARAJA TUGADI!', `Natija: ⭐ ${score}`, '▶  KEYINGI DARAJA', '#ffdd00');
   if (state==='over')     drawEndScreen("💔 O'YIN TUGADI",   `Natija: ⭐ ${score}`, '🏠  BOSH MENYU', '#ff3355');
-  if (state==='win')      drawEndScreen("🏆 G'OLIB! 🏆",     `Umumiy natija: ⭐ ${score}`, '🏠  BOSH MENYU', '#ffdd00');
+  if (state==='win')      drawEndScreen("🏆 BARCHA 30 DARAJA YUTILDI! 🏆", `Umumiy natija: ⭐ ${score}`, '🏠  BOSH MENYU', '#ffdd00');
 }
 
 // ─── ASOSIY SIKL ──────────────────────────────────────────

@@ -2,931 +2,1020 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="description" content="Ranglar Ko'rligi - Rang o'zgartirish platformer o'yini telefon uchun">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="Ranglar Ko'rligi - Rang o'zgartirish platformer">
 <title>Ranglar Ko'rligi 🎮</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
-body { background:#000; width:100vw; height:100vh; overflow:hidden; }
-canvas { display:block; width:100vw; height:100vh; touch-action:none; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#000;overflow:hidden;width:100vw;height:100vh}
+canvas{display:block;width:100vw;height:100vh;touch-action:none}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <script>
 'use strict';
-// =========================================================
-//  RANGLAR KO'RLIGI  v2 — telefon uchun yaxshilangan
-// =========================================================
-const canvas = document.getElementById('c');
-const ctx    = canvas.getContext('2d');
+// ═══════════════════════════════════════════════════════════
+//  RANGLAR KO'RLIGI  v3  —  To'liq versiya
+// ═══════════════════════════════════════════════════════════
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
 
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
-    r = Math.min(r||0, w/2, h/2);
+// roundRect polyfill
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    r=Math.min(r||0,w/2,h/2);
     this.beginPath();
-    this.moveTo(x+r,y); this.lineTo(x+w-r,y); this.quadraticCurveTo(x+w,y,x+w,y+r);
-    this.lineTo(x+w,y+h-r); this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    this.lineTo(x+r,y+h); this.quadraticCurveTo(x,y+h,x,y+h-r);
-    this.lineTo(x,y+r); this.quadraticCurveTo(x,y,x+r,y);
-    this.closePath(); return this;
+    this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);
+    this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);
+    this.closePath();return this;
   };
 }
 
-function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-resize(); window.addEventListener('resize', () => { resize(); updateBtns(); });
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();
+window.addEventListener('resize',()=>{resize();calcBtns();});
 
-// =========================================================
-//  KONSTANTLAR
-// =========================================================
-const GRAVITY = 0.46;
-const JUMP_F  = -13;
-const SPEED   = 3.6;
-const MAX_V   = 16;
+// ─── KONSTANTLAR ────────────────────────────────────────────
+const GRAV=0.47, JUMP=-13.2, SPD=3.6, MAXV=16;
 const PW=26, PH=34;
+const CHEX=['#ff3355','#33ff88','#3388ff'];
+const CNAME=["Qizil","Yashil","Ko'k"];
+const NEU='#8899cc';
 
-// Colors: 0=Qizil 1=Yashil 2=Ko'k  -1=Neytral
-const CHEX   = ['#ff3355','#33ff88','#3388ff'];
-const CNAME  = ["Qizil","Yashil","Ko'k"];
-const CNEUTRAL = '#8899cc';
+// ─── HOLAT ──────────────────────────────────────────────────
+let gameState='title'; // title | countdown | playing | levelComplete | over | win
+let levelIdx=0, score=0, lives=5, activeC=0, frame=0;
+let titleT=0, countDown=3, countTimer=0;
+let bestScore=parseInt(localStorage.getItem('rk_best')||0);
+let currentLevel;
 
-// =========================================================
-//  AUDIO
-// =========================================================
-let ac;
-function initAudio(){ if(!ac) ac = new(window.AudioContext||window.webkitAudioContext)(); }
-function beep(freq,type,dur,vol){
-  if(!ac)return;
-  const o=ac.createOscillator(), g=ac.createGain();
-  o.connect(g); g.connect(ac.destination);
-  o.type=type; o.frequency.value=freq;
-  g.gain.setValueAtTime(vol,ac.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+dur);
-  o.start(); o.stop(ac.currentTime+dur+0.01);
+// Screen shake
+let shakeAmt=0;
+// Color flash
+let flashAmt=0, flashCol='#fff';
+
+// ─── AUDIO ──────────────────────────────────────────────────
+let ac, bgmGain, bgmRunning=false, bgmTimer=null;
+
+function initAudio(){
+  if(ac)return;
+  ac=new(window.AudioContext||window.webkitAudioContext)();
+  bgmGain=ac.createGain();
+  bgmGain.gain.value=0.055;
+  bgmGain.connect(ac.destination);
 }
-function snd(t){
+
+function beep(freq,type,dur,vol,delay){
   if(!ac)return;
-  switch(t){
-    case 'jump':    beep(260,'square',.08,.08); setTimeout(()=>beep(440,'square',.07,.06),55); break;
-    case 'land':    beep(100,'square',.06,.05); break;
-    case 'die':     beep(350,'sawtooth',.1,.09); setTimeout(()=>beep(160,'sawtooth',.22,.08),110); break;
-    case 'collect': beep(720,'sine',.08,.07); setTimeout(()=>beep(1050,'sine',.1,.05),75); break;
-    case 'stomp':   beep(260,'square',.05,.09); setTimeout(()=>beep(80,'sine',.18,.07),40); break;
-    case 'color':   beep([500,640,780][activeC],'sine',.13,.07); break;
-    case 'win':     [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,'square',.15,.07),i*115)); break;
-    case 'next':    beep(750,'sine',.09,.07); setTimeout(()=>beep(1000,'sine',.15,.06),95); break;
+  const t=ac.currentTime+(delay||0);
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.connect(g);g.connect(ac.destination);
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,t);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t);o.stop(t+dur+0.02);
+}
+
+function snd(type){
+  if(!ac)return;
+  switch(type){
+    case'jump':   beep(260,'square',.08,.08);beep(420,'square',.07,.06,.06);break;
+    case'land':   beep(110,'square',.05,.06);break;
+    case'die':    beep(360,'sawtooth',.1,.09);beep(180,'sawtooth',.25,.08,.12);beep(90,'sawtooth',.4,.07,.27);break;
+    case'collect':beep(700,'sine',.08,.07);beep(1050,'sine',.1,.05,.08);break;
+    case'stomp':  beep(270,'square',.05,.1);beep(85,'sine',.18,.08,.05);break;
+    case'color':  beep([500,640,780][activeC],'sine',.12,.07);break;
+    case'portal': [523,659,784,1047].forEach((f,i)=>beep(f,'square',.14,.07,i*.12));break;
+    case'count':  beep(660,'sine',.15,.1);break;
+    case'go':     beep(880,'square',.06,.1);beep(1100,'square',.1,.08,.08);break;
   }
 }
 
-// =========================================================
-//  ZARRALAR (Particles)
-// =========================================================
-class Particle {
+// ─── CHIPTUNE MUSIQA ────────────────────────────────────────
+// Har bir element: [ohang_hz, bass_hz, urinishlar_soni]
+const BGM=[
+  [392,196,1],[330,196,1],[392,196,1],[440,196,1],
+  [392,175,1],[330,175,1],[262,175,1],[294,175,1],
+  [330,196,1],[294,196,1],[330,196,1],[392,196,1],
+  [330,175,1],[262,175,1],[196,175,2],
+  [392,196,1],[523,196,1],[440,196,1],[392,196,1],
+  [330,175,1],[392,175,1],[440,175,1],[523,175,1],
+  [440,196,1],[392,196,1],[330,196,1],[294,196,1],
+  [262,131,2],[294,131,1],[330,131,1],
+];
+const BGM_STEP=0.175; // 1/8 nota uzunligi (soniya)
+
+function bgmPlayNote(freq,dur,when,type,v){
+  if(!ac||!bgmGain)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.connect(g);g.connect(bgmGain);
+  o.type=type||'square';o.frequency.value=freq;
+  g.gain.setValueAtTime(v||0.45,when);
+  g.gain.setValueAtTime(v||0.45,when+dur*.75);
+  g.gain.exponentialRampToValueAtTime(0.0001,when+dur*.95);
+  o.start(when);o.stop(when+dur+.02);
+}
+
+function startBGM(){
+  if(!ac||bgmRunning)return;
+  bgmRunning=true;
+  const totalDur=BGM.reduce((s,[,,d])=>s+d*BGM_STEP,0);
+  function sch(){
+    if(!bgmRunning)return;
+    let t=ac.currentTime+.05;
+    for(const[mel,bas,steps]of BGM){
+      const d=steps*BGM_STEP;
+      bgmPlayNote(mel,d*.82,t,'square',.4);
+      bgmPlayNote(bas,d*.88,t,'triangle',.28);
+      t+=d;
+    }
+    bgmTimer=setTimeout(sch,(totalDur-.15)*1000);
+  }
+  sch();
+}
+
+function stopBGM(){
+  bgmRunning=false;
+  if(bgmTimer){clearTimeout(bgmTimer);bgmTimer=null;}
+  if(bgmGain&&ac)bgmGain.gain.setTargetAtTime(0,ac.currentTime,.3);
+}
+
+// ─── ZARRALAR ───────────────────────────────────────────────
+class Particle{
   constructor(x,y,col,vx,vy,life,sz){
-    this.x=x; this.y=y; this.col=col;
-    this.vx=vx!==undefined?vx:(Math.random()-.5)*9;
-    this.vy=vy!==undefined?vy:(Math.random()-.5)*9-2;
-    this.life=life||1; this.ml=this.life;
+    this.x=x;this.y=y;this.col=col;
+    this.vx=vx!=null?vx:(Math.random()-.5)*9;
+    this.vy=vy!=null?vy:(Math.random()-.5)*9-2;
+    this.life=life||1;this.ml=this.life;
     this.sz=sz||Math.random()*4+1;
   }
-  update(){ this.x+=this.vx; this.y+=this.vy; this.vy+=.19; this.vx*=.97; this.life-=.022; }
+  upd(){this.x+=this.vx;this.y+=this.vy;this.vy+=.2;this.vx*=.97;this.life-=.022;}
   draw(){
     if(this.life<=0)return;
     const a=Math.pow(this.life/this.ml,.6);
-    ctx.save(); ctx.globalAlpha=a*.9;
-    ctx.fillStyle=this.col; ctx.shadowColor=this.col; ctx.shadowBlur=7;
-    ctx.beginPath(); ctx.arc(this.x-cam.x,this.y-cam.y,this.sz*a,0,Math.PI*2); ctx.fill();
+    ctx.save();ctx.globalAlpha=a*.9;
+    ctx.fillStyle=this.col;ctx.shadowColor=this.col;ctx.shadowBlur=7;
+    ctx.beginPath();ctx.arc(this.x-cam.x,this.y-cam.y,this.sz*a,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
-  dead(){ return this.life<=0; }
+  dead(){return this.life<=0;}
 }
 let parts=[];
 function burst(x,y,col,n,str){
   str=str||1;
-  for(let i=0;i<n;i++) parts.push(new Particle(x,y,col,(Math.random()-.5)*9*str,(Math.random()-.5)*9*str-3*str));
+  for(let i=0;i<n;i++)
+    parts.push(new Particle(x,y,col,(Math.random()-.5)*9*str,(Math.random()-.5)*9*str-3*str));
 }
 
-// =========================================================
-//  KAMERA
-// =========================================================
+// ─── KAMERA ─────────────────────────────────────────────────
 const cam={x:0,y:0,tx:0,ty:0};
 function updateCam(){
-  cam.x+=(cam.tx-cam.x)*.13; cam.y+=(cam.ty-cam.y)*.13;
+  cam.x+=(cam.tx-cam.x)*.13;
+  cam.y+=(cam.ty-cam.y)*.13;
   const lv=currentLevel;
   cam.x=Math.max(0,Math.min(cam.x,lv.worldW-canvas.width));
-  cam.y=Math.max(-150,Math.min(cam.y,lv.worldH-canvas.height+200));
+  cam.y=Math.max(-180,Math.min(cam.y,lv.worldH-canvas.height+200));
 }
 
-// =========================================================
-//  YORDAMCHI
-// =========================================================
-function overlap(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
+function addShake(v){shakeAmt=Math.max(shakeAmt,v);}
+function addFlash(col,v){flashCol=col;flashAmt=Math.max(flashAmt,v);}
 
-// =========================================================
-//  PLATFORMA
-// =========================================================
-class Platform {
-  constructor(x,y,w,h,col){ this.x=x; this.y=y; this.w=w; this.h=h; this.col=col; }
-  solid(){ return this.col===-1||this.col!==activeC; }
+// ─── YORDAMCHILAR ───────────────────────────────────────────
+function ov(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+
+// ─── PLATFORMA ──────────────────────────────────────────────
+class Platform{
+  constructor(x,y,w,h,col){this.x=x;this.y=y;this.w=w;this.h=h;this.col=col;}
+  solid(){return this.col===-1||this.col!==activeC;}
   draw(){
-    const sx=this.x-cam.x, sy=this.y-cam.y;
+    const sx=this.x-cam.x,sy=this.y-cam.y;
     const erased=this.col!==-1&&this.col===activeC;
-    const hex=this.col===-1?CNEUTRAL:CHEX[this.col];
+    const hex=this.col===-1?NEU:CHEX[this.col];
     ctx.save();
-    if(erased) ctx.globalAlpha=.1;
-    ctx.shadowColor=hex; ctx.shadowBlur=erased?0:18;
+    if(erased)ctx.globalAlpha=.1;
+    ctx.shadowColor=hex;ctx.shadowBlur=erased?0:18;
     const gr=ctx.createLinearGradient(sx,sy,sx,sy+this.h);
-    gr.addColorStop(0,hex); gr.addColorStop(1,hex+'88');
-    ctx.fillStyle=gr; ctx.beginPath(); ctx.roundRect(sx,sy,this.w,this.h,5); ctx.fill();
+    gr.addColorStop(0,hex);gr.addColorStop(1,hex+'77');
+    ctx.fillStyle=gr;ctx.beginPath();ctx.roundRect(sx,sy,this.w,this.h,5);ctx.fill();
     if(!erased){
-      ctx.globalAlpha=.35; ctx.fillStyle='rgba(255,255,255,.4)';
+      ctx.globalAlpha=.35;ctx.fillStyle='rgba(255,255,255,.4)';
       ctx.fillRect(sx+4,sy+2,this.w-8,4);
     }
     ctx.restore();
   }
 }
 
-// =========================================================
-//  TIKAN (Spike)
-// =========================================================
-class Spike {
-  constructor(x,y,w,col){ this.x=x; this.y=y; this.w=w||30; this.h=20; this.col=col; }
-  solid(){ return this.col===-1||this.col!==activeC; }
-  check(){
-    if(!this.solid())return;
-    if(player.alive&&overlap(player.rect(),{x:this.x,y:this.y,w:this.w,h:this.h})) player.kill();
-  }
+// ─── TIKAN ──────────────────────────────────────────────────
+class Spike{
+  constructor(x,y,w,col){this.x=x;this.y=y;this.w=w||28;this.h=20;this.col=col;}
+  solid(){return this.col===-1||this.col!==activeC;}
+  check(){if(!this.solid())return;if(player.alive&&ov(player.rect(),{x:this.x,y:this.y,w:this.w,h:this.h}))player.kill();}
   draw(){
-    const sx=this.x-cam.x, sy=this.y-cam.y;
-    const hex=this.col===-1?CNEUTRAL:CHEX[this.col];
-    const erased=this.col!==-1&&this.col===activeC;
-    ctx.save(); if(erased)ctx.globalAlpha=.1;
-    ctx.fillStyle=hex; ctx.shadowColor=hex; ctx.shadowBlur=erased?0:10;
-    const n=Math.max(1,Math.floor(this.w/16)), sw=this.w/n;
+    const sx=this.x-cam.x,sy=this.y-cam.y,hex=this.col===-1?NEU:CHEX[this.col];
+    const er=this.col!==-1&&this.col===activeC;
+    ctx.save();if(er)ctx.globalAlpha=.1;
+    ctx.fillStyle=hex;ctx.shadowColor=hex;ctx.shadowBlur=er?0:10;
+    const n=Math.max(1,Math.floor(this.w/16)),sw=this.w/n;
     for(let i=0;i<n;i++){
-      ctx.beginPath(); ctx.moveTo(sx+i*sw,sy+this.h); ctx.lineTo(sx+i*sw+sw/2,sy); ctx.lineTo(sx+(i+1)*sw,sy+this.h); ctx.closePath(); ctx.fill();
+      ctx.beginPath();ctx.moveTo(sx+i*sw,sy+this.h);
+      ctx.lineTo(sx+i*sw+sw/2,sy);ctx.lineTo(sx+(i+1)*sw,sy+this.h);
+      ctx.closePath();ctx.fill();
     }
     ctx.restore();
   }
 }
 
-// =========================================================
-//  OLMOS (Gem)
-// =========================================================
-class Gem {
-  constructor(x,y,col){ this.x=x; this.y=y; this.w=20; this.h=20; this.col=col; this.t=Math.random()*Math.PI*2; this.taken=false; }
-  update(){
+// ─── OLMOS ──────────────────────────────────────────────────
+class Gem{
+  constructor(x,y,col){this.x=x;this.y=y;this.w=20;this.h=20;this.col=col;this.t=Math.random()*Math.PI*2;this.taken=false;}
+  upd(){
     this.t+=.04;
     if(!this.taken&&player.alive){
       const fy=this.y-Math.sin(this.t)*7;
-      if(overlap(player.rect(),{x:this.x,y:fy,w:this.w,h:this.h})){
-        this.taken=true; score+=50;
-        burst(this.x+10,this.y+10,this.col===-1?'#ffdd00':CHEX[this.col],8); snd('collect');
+      if(ov(player.rect(),{x:this.x,y:fy,w:this.w,h:this.h})){
+        this.taken=true;score+=50;
+        burst(this.x+10,this.y+10,this.col===-1?'#ffdd00':CHEX[this.col],8);
+        snd('collect');
       }
     }
   }
   draw(){
     if(this.taken)return;
-    const sx=this.x-cam.x, sy=this.y-cam.y-Math.sin(this.t)*7;
+    const sx=this.x-cam.x,sy=this.y-cam.y-Math.sin(this.t)*7;
     const hex=this.col===-1?'#ffdd00':CHEX[this.col];
-    ctx.save(); ctx.shadowColor=hex; ctx.shadowBlur=16; ctx.fillStyle=hex;
-    ctx.beginPath(); ctx.moveTo(sx+10,sy); ctx.lineTo(sx+20,sy+10); ctx.lineTo(sx+10,sy+20); ctx.lineTo(sx,sy+10); ctx.closePath(); ctx.fill();
-    ctx.globalAlpha=.5; ctx.fillStyle='#fff';
-    ctx.beginPath(); ctx.moveTo(sx+10,sy+2); ctx.lineTo(sx+18,sy+10); ctx.lineTo(sx+10,sy+10); ctx.closePath(); ctx.fill();
+    ctx.save();ctx.shadowColor=hex;ctx.shadowBlur=16;ctx.fillStyle=hex;
+    ctx.beginPath();ctx.moveTo(sx+10,sy);ctx.lineTo(sx+20,sy+10);ctx.lineTo(sx+10,sy+20);ctx.lineTo(sx,sy+10);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=.5;ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.moveTo(sx+10,sy+2);ctx.lineTo(sx+18,sy+10);ctx.lineTo(sx+10,sy+10);ctx.closePath();ctx.fill();
     ctx.restore();
   }
 }
 
-// =========================================================
-//  PORTAL (Daraja tugashi)
-// =========================================================
-class Portal {
-  constructor(x,y){ this.x=x; this.y=y; this.w=42; this.h=60; this.t=0; this.triggered=false; }
-  update(){ this.t+=.04; if(!this.triggered&&player.alive&&overlap(player.rect(),this)){this.triggered=true;nextLevel();} }
+// ─── PORTAL ─────────────────────────────────────────────────
+class Portal{
+  constructor(x,y){this.x=x;this.y=y;this.w=42;this.h=60;this.t=0;this.done=false;}
+  upd(){
+    this.t+=.04;
+    if(!this.done&&player.alive&&ov(player.rect(),this)){this.done=true;nextLevel();}
+  }
   draw(){
-    const sx=this.x-cam.x+21, sy=this.y-cam.y+30;
+    const sx=this.x-cam.x+21,sy=this.y-cam.y+30;
     ctx.save();
+    // dış parlama
     const og=ctx.createRadialGradient(sx,sy,0,sx,sy,55);
-    og.addColorStop(0,'rgba(200,80,255,.35)'); og.addColorStop(1,'rgba(180,60,255,0)');
-    ctx.fillStyle=og; ctx.beginPath(); ctx.ellipse(sx,sy,55,60,0,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#cc55ff'; ctx.lineWidth=3+Math.sin(this.t); ctx.shadowColor='#cc55ff'; ctx.shadowBlur=28;
-    ctx.beginPath(); ctx.ellipse(sx,sy,20+Math.sin(this.t)*3,30+Math.cos(this.t)*4,0,0,Math.PI*2); ctx.stroke();
+    og.addColorStop(0,'rgba(200,80,255,.35)');og.addColorStop(1,'rgba(180,60,255,0)');
+    ctx.fillStyle=og;ctx.beginPath();ctx.ellipse(sx,sy,55,60,0,0,Math.PI*2);ctx.fill();
+    // halqa
+    ctx.strokeStyle='#cc55ff';ctx.lineWidth=3+Math.sin(this.t);ctx.shadowColor='#cc55ff';ctx.shadowBlur=28;
+    ctx.beginPath();ctx.ellipse(sx,sy,20+Math.sin(this.t)*3,29+Math.cos(this.t)*4,0,0,Math.PI*2);ctx.stroke();
+    // ichki
     const ig=ctx.createRadialGradient(sx,sy,0,sx,sy,19);
-    ig.addColorStop(0,'rgba(230,140,255,.85)'); ig.addColorStop(1,'rgba(100,20,200,.3)');
-    ctx.fillStyle=ig; ctx.beginPath(); ctx.ellipse(sx,sy,19,29,0,0,Math.PI*2); ctx.fill();
+    ig.addColorStop(0,'rgba(230,140,255,.85)');ig.addColorStop(1,'rgba(100,20,200,.3)');
+    ctx.fillStyle=ig;ctx.beginPath();ctx.ellipse(sx,sy,19,28,0,0,Math.PI*2);ctx.fill();
     for(let i=0;i<3;i++){
       const a=this.t*2+i*Math.PI*2/3;
-      ctx.fillStyle='#ff88ff'; ctx.shadowBlur=9;
-      ctx.beginPath(); ctx.arc(sx+Math.cos(a)*29,sy+Math.sin(a)*35,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ff88ff';ctx.shadowBlur=9;
+      ctx.beginPath();ctx.arc(sx+Math.cos(a)*29,sy+Math.sin(a)*35,4,0,Math.PI*2);ctx.fill();
     }
-    ctx.shadowBlur=0; ctx.font='bold 18px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#fff'; ctx.fillText('⭐',sx,sy);
+    ctx.shadowBlur=0;ctx.font='bold 18px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';ctx.fillText('⭐',sx,sy);
     ctx.restore();
   }
 }
 
-// =========================================================
-//  DUSHMAN (Enemy)
-// =========================================================
-class Enemy {
-  constructor(x,y,pl,pr,col){ this.x=x; this.y=y; this.w=30; this.h=30; this.vx=.9; this.pl=pl; this.pr=pr; this.col=col; this.alive=true; this.t=0; }
-  update(){
+// ─── DUSHMAN ────────────────────────────────────────────────
+class Enemy{
+  constructor(x,y,pl,pr,col){this.x=x;this.y=y;this.w=30;this.h=30;this.vx=.9;this.pl=pl;this.pr=pr;this.col=col;this.alive=true;this.t=0;}
+  upd(){
     if(!this.alive)return;
-    this.t+=.1; this.x+=this.vx;
-    if(this.x<=this.pl||this.x+this.w>=this.pr) this.vx*=-1;
-    if(!player.alive||player.invincible>0)return;
-    if(overlap(player.rect(),{x:this.x,y:this.y,w:this.w,h:this.h})){
+    this.t+=.1;this.x+=this.vx;
+    if(this.x<=this.pl||this.x+this.w>=this.pr)this.vx*=-1;
+    if(!player.alive||player.inv>0)return;
+    if(ov(player.rect(),{x:this.x,y:this.y,w:this.w,h:this.h})){
       if(player.vy>1&&player.y+player.h<this.y+this.h*.55){
-        this.alive=false; player.vy=JUMP_F*.65; player.jumps=1;
-        score+=100; burst(this.x+15,this.y+15,this.col>=0?CHEX[this.col]:'#ff8833',14); snd('stomp');
-      } else { player.kill(); }
+        this.alive=false;player.vy=JUMP*.65;
+        score+=100;addShake(8);
+        burst(this.x+15,this.y+15,this.col>=0?CHEX[this.col]:'#ff8833',15);
+        snd('stomp');
+      }else{player.kill();}
     }
   }
   draw(){
     if(!this.alive)return;
-    const sx=this.x-cam.x, sy=this.y-cam.y+Math.sin(this.t)*2.5;
+    const sx=this.x-cam.x,sy=this.y-cam.y+Math.sin(this.t)*2.5;
     const ec=this.col>=0?CHEX[this.col]:'#ff8833';
-    ctx.save(); ctx.shadowColor=ec; ctx.shadowBlur=14; ctx.fillStyle=ec;
-    ctx.beginPath(); ctx.roundRect(sx,sy,this.w,this.h-Math.abs(Math.sin(this.t))*2,7); ctx.fill();
-    ctx.fillStyle='#111'; ctx.shadowBlur=0;
+    ctx.save();ctx.shadowColor=ec;ctx.shadowBlur=15;ctx.fillStyle=ec;
+    ctx.beginPath();ctx.roundRect(sx,sy,this.w,this.h-Math.abs(Math.sin(this.t))*2,7);ctx.fill();
+    ctx.fillStyle='#111';ctx.shadowBlur=0;
     [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(sx+15+s*8,sy+11,4,0,Math.PI*2);ctx.fill();});
     ctx.fillStyle='#f00';
     [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(sx+15+s*8,sy+11,2,0,Math.PI*2);ctx.fill();});
-    ctx.strokeStyle='#111'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(sx+5,sy+5); ctx.lineTo(sx+11,sy+8); ctx.moveTo(sx+25,sy+5); ctx.lineTo(sx+19,sy+8); ctx.stroke();
+    ctx.strokeStyle='#111';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(sx+5,sy+5);ctx.lineTo(sx+11,sy+8);ctx.moveTo(sx+25,sy+5);ctx.lineTo(sx+19,sy+8);ctx.stroke();
     ctx.restore();
   }
 }
 
-// =========================================================
-//  PLAYER
-// =========================================================
+// ─── DARAJA BO'SHASH BELGISI ────────────────────────────────
+class Hint{
+  constructor(x,y,txt,col){this.x=x;this.y=y;this.txt=txt;this.col=col;this.t=Math.random()*Math.PI*2;}
+  draw(){
+    if(Math.abs(player.x-this.x)>350)return;
+    this.t+=.04;
+    const sx=this.x-cam.x,sy=this.y-cam.y+Math.sin(this.t)*5;
+    const hex=CHEX[this.col];
+    ctx.save();
+    ctx.shadowColor=hex;ctx.shadowBlur=12;
+    ctx.fillStyle=hex;
+    ctx.font=`bold ${Math.min(canvas.width*.032,13)}px Arial`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('↓ '+this.txt+' ↓',sx,sy);
+    ctx.restore();
+  }
+}
+
+// ─── PLAYER ─────────────────────────────────────────────────
 const player={
   x:100,y:100,vx:0,vy:0,w:PW,h:PH,
-  grounded:false,alive:true,dying:false,invincible:0,jumps:0,maxJumps:2,face:1,
-  rect(){ return {x:this.x,y:this.y,w:this.w,h:this.h}; },
-  reset(sx,sy){
-    this.x=sx; this.y=sy; this.vx=0; this.vy=0;
-    this.grounded=false; this.alive=true; this.dying=false;
-    this.invincible=90; // kirish vaqtida himoya
-    this.jumps=0;
+  grounded:false,alive:true,dying:false,
+  inv:0,jumped:false,face:1,
+  // squash/stretch
+  sx:1,sy:1,tsx:1,tsy:1,
+  rect(){return{x:this.x,y:this.y,w:this.w,h:this.h};},
+  reset(rx,ry){
+    this.x=rx;this.y=ry;this.vx=0;this.vy=0;
+    this.grounded=false;this.alive=true;this.dying=false;
+    this.inv=100;this.jumped=false;
+    this.sx=1;this.sy=1;this.tsx=1;this.tsy=1;
   },
-  update(){
+  upd(){
     if(!this.alive)return;
-    if(this.invincible>0)this.invincible--;
-    // Harakat
-    if(keys.left||touch.left)       {this.vx=-SPEED;this.face=-1;}
-    else if(keys.right||touch.right){this.vx= SPEED;this.face= 1;}
+    if(this.inv>0)this.inv--;
+    // squash/stretch yaqinlashuv
+    this.sx+=(this.tsx-this.sx)*.28;this.sy+=(this.tsy-this.sy)*.28;
+    this.tsx+=(1-this.tsx)*.18;this.tsy+=(1-this.tsy)*.18;
+
+    if(keys.left||touch.left)      {this.vx=-SPD;this.face=-1;}
+    else if(keys.right||touch.right){this.vx= SPD;this.face= 1;}
     else this.vx*=.76;
-    // Tortishish
-    this.vy=Math.min(this.vy+GRAVITY,MAX_V);
-    // X harakat + to'qnashuv
+
+    this.vy=Math.min(this.vy+GRAV,MAXV);
+
     this.x+=this.vx;
     for(const p of currentLevel.plats){
       if(!p.solid())continue;
-      if(overlap(this.rect(),p)){
-        if(this.vx>0)this.x=p.x-this.w; else this.x=p.x+p.w; this.vx=0;
+      if(ov(this.rect(),p)){
+        if(this.vx>0)this.x=p.x-this.w;else this.x=p.x+p.w;
+        this.vx=0;
       }
     }
-    // Y harakat + to'qnashuv
-    const wasG=this.grounded; this.grounded=false;
+    const wasG=this.grounded;this.grounded=false;
     this.y+=this.vy;
     for(const p of currentLevel.plats){
       if(!p.solid())continue;
-      if(overlap(this.rect(),p)){
-        if(this.vy>=0){this.y=p.y-this.h;this.vy=0;this.grounded=true;}
-        else{this.y=p.y+p.h;this.vy=0;}
+      if(ov(this.rect(),p)){
+        if(this.vy>=0){
+          this.y=p.y-this.h;
+          if(this.vy>4){addShake(5);this.tsx=1.5;this.tsy=0.55;snd('land');}
+          this.vy=0;this.grounded=true;
+        }else{this.y=p.y+p.h;this.vy=0;}
       }
     }
-    if(this.grounded&&!wasG){this.jumps=0;if(this.vy>3)snd('land');}
+    if(this.grounded&&!wasG){this.jumped=false;}
     this.x=Math.max(0,this.x);
-    if(this.y>currentLevel.worldH+350)this.kill();
-    // Yugurish changi
-    if(this.grounded&&(keys.left||touch.left||keys.right||touch.right)&&frame%7===0)
+    if(this.y>currentLevel.worldH+400)this.kill();
+
+    // yurganda chang
+    if(this.grounded&&(keys.left||touch.left||keys.right||touch.right)&&frame%8===0)
       parts.push(new Particle(this.x+13,this.y+this.h,CHEX[activeC],0,-1,.4,1.5));
-    // Kamera
+
     cam.tx=this.x-canvas.width/2+this.w/2;
     cam.ty=this.y-canvas.height*.44;
   },
   jump(){
-    if(this.jumps<this.maxJumps){
-      this.vy=JUMP_F; this.jumps++; this.grounded=false;
-      snd('jump'); burst(this.x+13,this.y+this.h,CHEX[activeC],8,.7);
-    }
+    if(this.jumped||!this.grounded)return; // FAQAT 1 marta sakrash!
+    this.vy=JUMP;this.jumped=true;this.grounded=false;
+    this.tsx=.7;this.tsy=1.45; // uzayish
+    snd('jump');burst(this.x+13,this.y+this.h,CHEX[activeC],9,.7);
   },
   kill(){
-    if(this.dying||this.invincible>0)return;
-    this.dying=true; this.alive=false;
-    burst(this.x+13,this.y+17,'#ff3355',22); burst(this.x+13,this.y+17,'#fff',8);
-    snd('die'); lives--;
+    if(this.dying||this.inv>0)return;
+    this.dying=true;this.alive=false;
+    addShake(18);addFlash('#ff1144',.55);
+    burst(this.x+13,this.y+17,'#ff3355',25);burst(this.x+13,this.y+17,'#fff',10);
+    snd('die');lives--;
     setTimeout(()=>{
       if(lives<=0)gameState='over';
       else{loadLevel(levelIdx);gameState='playing';}
-    },1300);
+    },1400);
   },
   draw(){
     if(!this.alive)return;
-    if(this.invincible>0&&frame%6<3)return;
-    const sx=this.x-cam.x, sy=this.y-cam.y;
+    if(this.inv>0&&frame%6<3)return;
+    // squash/stretch asosida o'lchamni hisoblash
+    const dw=this.w*this.sx,dh=this.h*this.sy;
+    const sx2=this.x-cam.x+this.w/2-dw/2;
+    const sy2=this.y-cam.y+this.h-dh;
     ctx.save();
-    ctx.globalAlpha=.22; ctx.fillStyle=CHEX[activeC];
-    ctx.beginPath(); ctx.roundRect(sx-6,sy-6,this.w+12,this.h+12,15); ctx.fill(); ctx.globalAlpha=1;
-    ctx.shadowColor=CHEX[activeC]; ctx.shadowBlur=24;
-    const gr=ctx.createLinearGradient(sx,sy,sx,sy+this.h);
-    gr.addColorStop(0,'#dde2ff'); gr.addColorStop(1,'#7788cc');
-    ctx.fillStyle=gr; ctx.beginPath(); ctx.roundRect(sx,sy,this.w,this.h,8); ctx.fill();
-    ctx.strokeStyle=CHEX[activeC]; ctx.lineWidth=2.5; ctx.stroke();
-    const ex=sx+(this.face>0?this.w*.65:this.w*.35), ey=sy+this.h*.3;
-    ctx.fillStyle='#111'; ctx.shadowBlur=0; ctx.beginPath(); ctx.arc(ex,ey,4.5,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=CHEX[activeC]; ctx.beginPath(); ctx.arc(ex+this.face*1.3,ey,2,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=CHEX[activeC]; ctx.globalAlpha=.8; ctx.fillRect(sx+3,sy+this.h*.55,this.w-6,5);
+    // aura
+    ctx.globalAlpha=.22;ctx.fillStyle=CHEX[activeC];
+    ctx.beginPath();ctx.roundRect(sx2-6,sy2-6,dw+12,dh+12,15);ctx.fill();ctx.globalAlpha=1;
+    ctx.shadowColor=CHEX[activeC];ctx.shadowBlur=24;
+    const gr=ctx.createLinearGradient(sx2,sy2,sx2,sy2+dh);
+    gr.addColorStop(0,'#dde2ff');gr.addColorStop(1,'#7788cc');
+    ctx.fillStyle=gr;ctx.beginPath();ctx.roundRect(sx2,sy2,dw,dh,8);ctx.fill();
+    ctx.strokeStyle=CHEX[activeC];ctx.lineWidth=2.5;ctx.stroke();
+    // ko'z
+    const ex=sx2+(this.face>0?dw*.65:dw*.35),ey=sy2+dh*.3;
+    ctx.fillStyle='#111';ctx.shadowBlur=0;ctx.beginPath();ctx.arc(ex,ey,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=CHEX[activeC];ctx.beginPath();ctx.arc(ex+this.face*1.3,ey,2,0,Math.PI*2);ctx.fill();
+    // sharf
+    ctx.fillStyle=CHEX[activeC];ctx.globalAlpha=.8;
+    ctx.fillRect(sx2+3,sy2+dh*.55,dw-6,4);
     ctx.restore();
   }
 };
 
-// =========================================================
-//  DARAJALAR
-// =========================================================
-function P(x,y,w,h,c){ return new Platform(x,y,w,h,c); }
-function S(x,y,w,c)  { return new Spike(x,y,w,c); }
-function E(x,y,l,r,c){ return new Enemy(x,y,l,r,c); }
-function G(x,y,c)    { return new Gem(x,y,c); }
+// ─── LEVEL BUILDER ──────────────────────────────────────────
+const P=(x,y,w,h,c)=>new Platform(x,y,w,h,c);
+const S=(x,y,w,c)=>new Spike(x,y,w,c);
+const E=(x,y,l,r,c)=>new Enemy(x,y,l,r,c);
+const G=(x,y,c)=>new Gem(x,y,c);
+const H=(x,y,t,c)=>new Hint(x,y,t,c);
 
-/* -------- DARAJA 1: Oson kirish -------- */
-function makeLevel1(){
-  const GY=530;
+// ══ DARAJA 1 ══
+function mkLv1(){
+  const Y=530;
   return{
-    name:"1-DARAJA: Salom Dunyo!",
-    worldW:2800, worldH:800,
-    startX:60, startY:GY-80,
-    bgTop:'#06061e', bgBot:'#140824',
+    name:'1-DARAJA: Salom Dunyo!',
+    worldW:2900,worldH:800,
+    sx:60,sy:Y-80,
+    bgTop:'#06061e',bgBot:'#140824',
     initC:0,
     plats:[
-      // Asosiy yer
-      P(0,GY,360,30,-1),
-      // Gap 90px → qizil ko'prik
-      P(450,GY,210,30,0),
-      // Gap 90px → neytral
-      P(750,GY,180,30,-1),
-      // Gap 80px → yashil ko'prik
-      P(1010,GY,210,30,1),
-      // Gap 80px → neytral
-      P(1300,GY,180,30,-1),
-      // Gap 80px → ko'k ko'prik
-      P(1560,GY,210,30,2),
-      // Gap 90px → neytral oxiri
-      P(1860,GY,200,30,-1),
-      P(2100,GY,180,30,0),
-      P(2330,GY,470,30,-1),
-
+      P(0,Y,360,30,-1),
+      P(450,Y,220,30,0),     // Qizil ko'prik
+      P(770,Y,190,30,-1),
+      P(1060,Y,220,30,1),    // Yashil ko'prik
+      P(1380,Y,190,30,-1),
+      P(1670,Y,220,30,2),    // Ko'k ko'prik
+      P(1990,Y,190,30,-1),
+      P(2230,Y,180,30,0),
+      P(2510,Y,390,30,-1),
       // Yuqori platformalar
-      P(80, GY-120,110,20,0),
-      P(240,GY-195,100,20,1),
-      P(460,GY-145,110,20,-1),
-      P(630,GY-215,100,20,2),
-      P(765,GY-140,110,20,0),
-      P(920,GY-215,100,20,-1),
-      P(1025,GY-150,110,20,1),
-      P(1180,GY-210,100,20,0),
-      P(1315,GY-145,110,20,-1),
-      P(1450,GY-210,100,20,2),
-      P(1575,GY-150,110,20,1),
-      P(1720,GY-220,100,20,-1),
-      P(1875,GY-145,110,20,0),
-      P(2015,GY-215,100,20,2),
-      P(2115,GY-155,110,20,-1),
-      P(2355,GY-130,110,20,1),
-      P(2510,GY-200,100,20,0),
-      P(2650,GY-130,100,20,-1),
+      P(80, Y-115,110,20,0), P(240,Y-190,100,20,1), P(465,Y-150,110,20,-1),
+      P(640,Y-220,100,20,2), P(780,Y-145,110,20,0), P(940,Y-220,100,20,-1),
+      P(1075,Y-155,110,20,1),P(1240,Y-215,100,20,0),P(1390,Y-150,110,20,-1),
+      P(1510,Y-220,100,20,2),P(1685,Y-155,110,20,1),P(1840,Y-225,100,20,-1),
+      P(2005,Y-150,110,20,0),P(2140,Y-220,100,20,2),P(2245,Y-160,110,20,-1),
+      P(2530,Y-130,110,20,1),P(2680,Y-200,100,20,0),P(2790,Y-130,100,20,-1),
     ],
     spikes:[
-      S(360,GY-18,90,-1), S(660,GY-18,90,-1),
-      S(930,GY-18,80,-1), S(1220,GY-18,80,-1),
-      S(1480,GY-18,80,-1),S(1770,GY-18,90,-1),
-      S(2080,GY-18,20,-1),S(2290,GY-18,40,-1),
+      S(360,Y-18,90,-1),S(670,Y-18,90,-1),
+      S(980,Y-18,80,-1),S(1290,Y-18,80,-1),
+      S(1490,Y-18,80,-1),S(1800,Y-18,90,-1),
+      S(2100,Y-18,30,-1),S(2310,Y-18,40,-1),
     ],
     enemies:[
-      E(470,GY-30,450,660,0),
-      E(770,GY-30,750,930,1),
-      E(1030,GY-30,1010,1220,2),
-      E(1580,GY-30,1560,1770,0),
-      E(2360,GY-30,2330,2600,-1),
+      E(470,Y-30,450,670,0),
+      E(790,Y-30,770,980,1),
+      E(1085,Y-30,1060,1290,2),
+      E(1700,Y-30,1670,1800,-1),
+      E(2540,Y-30,2510,2750,-1),
     ],
     gems:[
-      G(100,GY-172,0),G(260,GY-248,1),G(480,GY-197,-1),
-      G(650,GY-267,2),G(790,GY-192,0),G(940,GY-267,-1),
-      G(1048,GY-202,1),G(1198,GY-264,0),G(1335,GY-197,-1),
-      G(1470,GY-262,2),G(1595,GY-202,1),G(1740,GY-272,-1),
-      G(1893,GY-197,0),G(2030,GY-267,2),G(2135,GY-207,-1),
-      G(2375,GY-182,1),G(2528,GY-252,0),G(2665,GY-182,-1),
+      G(100,Y-167,0),G(260,Y-243,1),G(485,Y-202,-1),
+      G(660,Y-272,2),G(800,Y-197,0),G(960,Y-272,-1),
+      G(1095,Y-207,1),G(1258,Y-268,0),G(1408,Y-202,-1),
+      G(1530,Y-272,2),G(1703,Y-207,1),G(1858,Y-277,-1),
+      G(2023,Y-202,0),G(2158,Y-272,2),G(2263,Y-212,-1),
+      G(2548,Y-182,1),G(2698,Y-252,0),G(2808,Y-182,-1),
     ],
-    portal:new Portal(2680,GY-90),
+    // Daraja 1 ta'lim ma'lumotlari
+    hints:[
+      H(560,Y-200,'R tugmani bosing!',0),
+      H(1170,Y-205,'G tugmani bosing!',1),
+      H(1780,Y-225,"B tugmani bosing!",2),
+    ],
+    portal:new Portal(2800,Y-90),
   };
 }
 
-/* -------- DARAJA 2: O'rta daraja -------- */
-function makeLevel2(){
-  const GY=510;
+// ══ DARAJA 2 ══
+function mkLv2(){
+  const Y=510;
   return{
-    name:"2-DARAJA: Rang Labirinti",
-    worldW:3400, worldH:800,
-    startX:60, startY:GY-80,
-    bgTop:'#060e18', bgBot:'#0e1820',
+    name:'2-DARAJA: Rang Labirinti',
+    worldW:3500,worldH:800,
+    sx:60,sy:Y-80,
+    bgTop:'#060e18',bgBot:'#0e1820',
     initC:1,
     plats:[
-      P(0,GY,280,30,-1),
-      // Tez almashuvchi bo'limlar
-      P(320,GY-90,68,20,0), P(408,GY-165,68,20,1), P(496,GY-90,68,20,2),
-      P(584,GY-165,68,20,0), P(672,GY-90,68,20,1), P(760,GY-165,68,20,2),
-      P(848,GY-90,68,20,0),
-      P(950,GY,200,30,-1),
-      // Uch qatlam
-      P(1200,GY-65,120,20,0), P(1200,GY-135,120,20,1), P(1200,GY-205,120,20,2),
-      P(1370,GY-65,120,20,2), P(1370,GY-135,120,20,0), P(1370,GY-205,120,20,1),
-      P(1540,GY-65,120,20,1), P(1540,GY-135,120,20,2), P(1540,GY-205,120,20,0),
-      P(1710,GY,200,30,-1),
-      // Zinapoya
-      P(1960,GY-75,100,20,0),  P(2110,GY-150,100,20,1),
-      P(2260,GY-225,100,20,2), P(2410,GY-300,100,20,0),
-      P(2560,GY-375,140,20,-1),
-      // Tushish
-      P(2750,GY-315,100,20,1), P(2900,GY-235,100,20,2),
-      P(3050,GY-155,100,20,0), P(3200,GY-75,100,20,1),
-      P(3340,GY,400,30,-1),
-      // Devor panellari
-      P(295,GY-100,22,100,0), P(928,GY-110,22,110,1),
-      P(1175,GY-220,22,220,2), P(1690,GY-220,22,220,0),
-      P(1935,GY-88,22,88,1), P(3318,GY-88,22,88,2),
+      P(0,Y,280,30,-1),
+      P(320,Y-90,68,20,0),P(408,Y-165,68,20,1),P(496,Y-90,68,20,2),
+      P(584,Y-165,68,20,0),P(672,Y-90,68,20,1),P(760,Y-165,68,20,2),P(848,Y-90,68,20,0),
+      P(950,Y,200,30,-1),
+      P(1200,Y-65,120,20,0),P(1200,Y-135,120,20,1),P(1200,Y-205,120,20,2),
+      P(1370,Y-65,120,20,2),P(1370,Y-135,120,20,0),P(1370,Y-205,120,20,1),
+      P(1540,Y-65,120,20,1),P(1540,Y-135,120,20,2),P(1540,Y-205,120,20,0),
+      P(1710,Y,200,30,-1),
+      P(1960,Y-75,100,20,0),P(2110,Y-150,100,20,1),
+      P(2260,Y-225,100,20,2),P(2410,Y-300,100,20,0),P(2560,Y-375,140,20,-1),
+      P(2750,Y-315,100,20,1),P(2900,Y-235,100,20,2),
+      P(3050,Y-155,100,20,0),P(3200,Y-75,100,20,1),P(3340,Y,400,30,-1),
+      P(295,Y-100,22,100,0),P(928,Y-110,22,110,1),
+      P(1175,Y-220,22,220,2),P(1690,Y-220,22,220,0),
+      P(1935,Y-88,22,88,1),P(3318,Y-88,22,88,2),
     ],
     spikes:[
-      S(280,GY-18,35,-1), S(928,GY-18,22,-1),
-      S(1690,GY-18,20,-1),S(1935,GY-18,25,-1), S(3318,GY-18,22,-1),
+      S(280,Y-18,35,-1),S(928,Y-18,22,-1),
+      S(1690,Y-18,20,-1),S(1935,Y-18,25,-1),S(3318,Y-18,22,-1),
     ],
     enemies:[
-      E(350,GY-115,320,610,0),  E(700,GY-190,496,848,1),
-      E(995,GY-30,950,1170,-1), E(1250,GY-230,1200,1320,2),
-      E(1760,GY-30,1710,1930,0),E(2590,GY-400,2560,2745,-1),
-      E(3380,GY-30,3340,3700,1),E(3540,GY-30,3340,3700,2),
+      E(350,Y-115,320,610,0),E(700,Y-190,496,848,1),
+      E(995,Y-30,950,1170,-1),E(1250,Y-230,1200,1320,2),
+      E(1760,Y-30,1710,1930,0),E(2595,Y-400,2560,2745,-1),
+      E(3385,Y-30,3340,3700,1),E(3545,Y-30,3340,3700,2),
     ],
     gems:[
-      G(348,GY-142,0),G(427,GY-218,1),G(515,GY-142,2),G(603,GY-218,0),G(691,GY-142,1),G(779,GY-218,2),G(867,GY-142,0),
-      G(1230,GY-118,0),G(1230,GY-188,1),G(1230,GY-258,2),
-      G(1400,GY-118,2),G(1400,GY-188,0),G(1400,GY-258,1),
-      G(1990,GY-128,0),G(2140,GY-203,1),G(2290,GY-278,2),G(2440,GY-353,0),G(2590,GY-428,-1),
-      G(3380,GY-52,-1),G(3480,GY-52,-1),G(3580,GY-52,-1),
+      G(348,Y-142,0),G(427,Y-218,1),G(515,Y-142,2),G(603,Y-218,0),G(691,Y-142,1),G(779,Y-218,2),G(867,Y-142,0),
+      G(1230,Y-118,0),G(1230,Y-188,1),G(1230,Y-258,2),
+      G(1400,Y-118,2),G(1400,Y-188,0),G(1400,Y-258,1),
+      G(1990,Y-128,0),G(2140,Y-203,1),G(2290,Y-278,2),G(2440,Y-353,0),G(2595,Y-428,-1),
+      G(3385,Y-52,-1),G(3485,Y-52,-1),G(3585,Y-52,-1),
     ],
-    portal:new Portal(3600,GY-90),
+    hints:[],
+    portal:new Portal(3600,Y-90),
   };
 }
 
-/* -------- DARAJA 3: Qiyin sinov -------- */
-function makeLevel3(){
-  const GY=490;
+// ══ DARAJA 3 ══
+function mkLv3(){
+  const Y=490;
   return{
-    name:"3-DARAJA: Oxirgi Sinov!",
-    worldW:4200, worldH:800,
-    startX:60, startY:GY-80,
-    bgTop:'#160608', bgBot:'#240810',
+    name:'3-DARAJA: Oxirgi Sinov!',
+    worldW:4300,worldH:800,
+    sx:60,sy:Y-80,
+    bgTop:'#160608',bgBot:'#240810',
     initC:2,
     plats:[
-      P(0,GY,210,30,-1),
-      // Tez almashuvchi
-      P(250,GY-88,58,20,0), P(325,GY-158,58,20,1), P(400,GY-88,58,20,2),
-      P(475,GY-158,58,20,0), P(550,GY-88,58,20,1), P(625,GY-158,58,20,2),
-      P(700,GY-88,58,20,0), P(775,GY-158,58,20,1), P(850,GY-88,58,20,2),
-      P(940,GY,175,30,-1),
-      // Rang qutisi
-      P(1160,GY-215,22,215,0), P(1160,GY-220,210,22,1), P(1368,GY-215,22,215,2),
-      P(1160,GY,210,30,-1),
-      P(1410,GY,180,30,-1),
-      // O'rta bo'lim
-      P(1640,GY-95,72,20,0), P(1742,GY-175,72,20,1), P(1844,GY-95,72,20,2),
-      P(1946,GY-175,72,20,0), P(2048,GY-95,72,20,1), P(2150,GY-175,72,20,2),
-      P(2270,GY,200,30,-1),
-      // Yuqoriga zinapoya
-      P(2510,GY-105,90,20,0), P(2655,GY-190,90,20,1),
-      P(2800,GY-275,90,20,2), P(2945,GY-360,90,20,0),
-      P(3090,GY-445,140,20,-1),
-      // Pastga
-      P(3270,GY-385,90,20,1), P(3415,GY-305,90,20,2),
-      P(3560,GY-225,90,20,0), P(3705,GY-145,90,20,1),
-      P(3850,GY,380,30,-1),
-      P(3920,GY-125,75,20,2), P(4030,GY-205,75,20,0),
-      P(4135,GY-125,65,20,1), P(4220,GY,200,30,-1),
-      // Devorlar
-      P(228,GY-95,22,95,1), P(918,GY-95,22,95,2),
-      P(1590,GY-95,22,95,0), P(2248,GY-95,22,95,1),
-      P(3828,GY-95,22,95,0),
+      P(0,Y,210,30,-1),
+      P(250,Y-88,58,20,0),P(325,Y-158,58,20,1),P(400,Y-88,58,20,2),
+      P(475,Y-158,58,20,0),P(550,Y-88,58,20,1),P(625,Y-158,58,20,2),
+      P(700,Y-88,58,20,0),P(775,Y-158,58,20,1),P(850,Y-88,58,20,2),
+      P(940,Y,175,30,-1),
+      P(1160,Y-215,22,215,0),P(1160,Y-220,210,22,1),P(1368,Y-215,22,215,2),P(1160,Y,210,30,-1),
+      P(1410,Y,180,30,-1),
+      P(1640,Y-95,72,20,0),P(1742,Y-175,72,20,1),P(1844,Y-95,72,20,2),
+      P(1946,Y-175,72,20,0),P(2048,Y-95,72,20,1),P(2150,Y-175,72,20,2),
+      P(2270,Y,200,30,-1),
+      P(2510,Y-105,90,20,0),P(2655,Y-190,90,20,1),
+      P(2800,Y-275,90,20,2),P(2945,Y-360,90,20,0),P(3090,Y-445,140,20,-1),
+      P(3270,Y-385,90,20,1),P(3415,Y-305,90,20,2),
+      P(3560,Y-225,90,20,0),P(3705,Y-145,90,20,1),P(3850,Y,380,30,-1),
+      P(3920,Y-125,75,20,2),P(4030,Y-205,75,20,0),P(4135,Y-125,65,20,1),P(4220,Y,200,30,-1),
+      P(228,Y-95,22,95,1),P(918,Y-95,22,95,2),
+      P(1590,Y-95,22,95,0),P(2248,Y-95,22,95,1),P(3828,Y-95,22,95,0),
     ],
     spikes:[
-      S(210,GY-18,40,-1), S(915,GY-18,45,-1),
-      S(1590,GY-18,20,-1),S(2248,GY-18,22,-1),
-      S(3828,GY-18,22,-1),
-      S(1616,GY-18,660,0), // Katta qizil tikan pol
+      S(210,Y-18,40,-1),S(915,Y-18,45,-1),
+      S(1590,Y-18,20,-1),S(2248,Y-18,22,-1),S(3828,Y-18,22,-1),
+      S(1616,Y-18,660,0),
     ],
     enemies:[
-      E(280,GY-113,250,912,0),  E(978,GY-30,940,1158,-1),
-      E(1205,GY-240,1160,1368,1),E(1700,GY-120,1640,1880,2),
-      E(2315,GY-30,2270,2490,-1),E(3120,GY-470,3090,3265,-1),
-      E(3895,GY-30,3850,4200,2), E(4040,GY-30,3850,4200,0),
+      E(280,Y-113,250,912,0),E(978,Y-30,940,1158,-1),
+      E(1205,Y-240,1160,1368,1),E(1700,Y-120,1640,1880,2),
+      E(2315,Y-30,2270,2490,-1),E(3120,Y-470,3090,3265,-1),
+      E(3900,Y-30,3850,4200,2),E(4045,Y-30,3850,4200,0),
     ],
     gems:[
-      G(278,GY-140,0),G(353,GY-210,1),G(428,GY-140,2),G(503,GY-210,0),G(578,GY-140,1),G(653,GY-210,2),G(728,GY-140,0),G(803,GY-210,1),G(878,GY-140,2),
-      G(1200,GY-240,-1),
-      G(1668,GY-148,0),G(1770,GY-228,1),G(1872,GY-148,2),G(1974,GY-228,0),G(2076,GY-148,1),G(2178,GY-228,2),
-      G(2540,GY-158,0),G(2685,GY-243,1),G(2830,GY-328,2),G(2975,GY-413,0),G(3120,GY-498,-1),
-      G(3955,GY-178,2),G(4063,GY-258,0),G(4163,GY-178,1),
+      G(278,Y-140,0),G(353,Y-210,1),G(428,Y-140,2),G(503,Y-210,0),G(578,Y-140,1),G(653,Y-210,2),G(728,Y-140,0),G(803,Y-210,1),G(878,Y-140,2),
+      G(1200,Y-240,-1),
+      G(1668,Y-148,0),G(1770,Y-228,1),G(1872,Y-148,2),G(1974,Y-228,0),G(2076,Y-148,1),G(2178,Y-228,2),
+      G(2540,Y-158,0),G(2685,Y-243,1),G(2830,Y-328,2),G(2975,Y-413,0),G(3120,Y-498,-1),
+      G(3955,Y-178,2),G(4063,Y-258,0),G(4163,Y-178,1),
     ],
-    portal:new Portal(4180,GY-90),
+    hints:[],
+    portal:new Portal(4200,Y-90),
   };
 }
 
-// =========================================================
-//  O'YIN HOLATI
-// =========================================================
-const levelFactories=[makeLevel1,makeLevel2,makeLevel3];
-let levelIdx=0, currentLevel, gameState='title';
-let score=0, lives=5, activeC=0, frame=0;
-let titleT=0;
+// ─── O'YIN BOSHQARUVI ───────────────────────────────────────
+const LVS=[mkLv1,mkLv2,mkLv3];
 
 function loadLevel(idx){
-  currentLevel=levelFactories[idx]();
+  currentLevel=LVS[idx]();
   activeC=currentLevel.initC;
-  player.reset(currentLevel.startX,currentLevel.startY);
-  cam.x=0; cam.y=0; parts=[];
+  player.reset(currentLevel.sx,currentLevel.sy);
+  cam.x=0;cam.y=0;parts=[];
 }
+
+function startGame(){score=0;lives=5;levelIdx=0;loadLevel(0);startCountDown();}
+function restartGame(){score=0;lives=5;levelIdx=0;loadLevel(0);startCountDown();}
+function startCountDown(){gameState='countdown';countDown=3;countTimer=0;}
+
 function nextLevel(){
-  score+=500; snd('next');
-  burst(player.x+13,player.y+17,'#ffdd00',28); burst(player.x+13,player.y+17,'#fff',12);
+  score+=500;snd('portal');
+  burst(player.x+13,player.y+17,'#ffdd00',30);burst(player.x+13,player.y+17,'#fff',12);
+  addFlash('#ffdd00',.5);
   levelIdx++;
-  if(levelIdx>=levelFactories.length){gameState='win';snd('win');}
-  else gameState='levelComplete';
+  if(levelIdx>=LVS.length){
+    if(score>bestScore){bestScore=score;localStorage.setItem('rk_best',bestScore);}
+    gameState='win';
+  }else{
+    gameState='levelComplete';
+  }
 }
+
 function setColor(c){
   if(activeC===c)return;
-  activeC=c; snd('color');
-  burst(player.x+13,player.y+17,CHEX[c],14,.8);
+  activeC=c;snd('color');
+  addFlash(CHEX[c],.35);
+  burst(player.x+13,player.y+17,CHEX[c],14,.75);
 }
-function startGame()  {score=0;lives=5;levelIdx=0;loadLevel(0);gameState='playing';}
-function restartGame(){score=0;lives=5;levelIdx=0;loadLevel(0);gameState='playing';}
 
-// =========================================================
-//  KLAVIATURA
-// =========================================================
+// ─── INPUT ──────────────────────────────────────────────────
 const keys={};
 const touch={left:false,right:false};
+
 window.addEventListener('keydown',e=>{
   initAudio();
-  if(gameState==='title')                     {startGame();return;}
-  if(gameState==='over'||gameState==='win')   {restartGame();return;}
-  if(gameState==='levelComplete')             {loadLevel(levelIdx);gameState='playing';return;}
-  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.left=true;
-  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.right=true;
-  if(['ArrowUp','w','W',' '].includes(e.key)){e.preventDefault();player.jump();}
-  if(e.key==='1')setColor(0);
-  if(e.key==='2')setColor(1);
-  if(e.key==='3')setColor(2);
+  if(gameState==='title')                   {startGame();return;}
+  if(gameState==='over'||gameState==='win') {restartGame();return;}
+  if(gameState==='levelComplete')           {startCountDown();loadLevel(levelIdx);gameState='countdown';return;}
+  if(gameState==='countdown'||gameState==='playing'){
+    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')keys.left=true;
+    if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')keys.right=true;
+    if(['ArrowUp','w','W',' '].includes(e.key)){e.preventDefault();player.jump();}
+    if(e.key==='1')setColor(0);
+    if(e.key==='2')setColor(1);
+    if(e.key==='3')setColor(2);
+  }
 });
 window.addEventListener('keyup',e=>{
-  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.left=false;
-  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.right=false;
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')keys.left=false;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')keys.right=false;
 });
 
-// =========================================================
-//  VIRTUAL TUGMALAR — yangi qulay joy
-// =========================================================
+// ─── TUGMALAR ───────────────────────────────────────────────
 const btns={};
-
-function updateBtns(){
-  const W=canvas.width, H=canvas.height;
-  // Pastki boshqaruv paneli 160px
-  const ctrlH=Math.min(160,H*.22);
+function calcBtns(){
+  const W=canvas.width,H=canvas.height;
   const pad=10;
-
-  // --- Harakat tugmalari (chap pastda) ---
-  const mvW=Math.min(74,W*.18);
-  const mvH=Math.min(72,ctrlH*.52);
+  const mvW=Math.min(76,W*.185),mvH=Math.min(74,H*.105);
   const row2Y=H-mvH-pad;
-  btns.left ={x:pad,         y:row2Y, w:mvW, h:mvH};
-  btns.right={x:pad*2+mvW,   y:row2Y, w:mvW, h:mvH};
-
-  // --- Sakrash tugmasi (o'ng pastda) ---
-  const jpW=Math.min(80,W*.20);
-  const jpH=Math.min(80,ctrlH*.58);
-  btns.jump={x:W-jpW-pad, y:H-jpH-pad, w:jpW, h:jpH};
-
-  // --- Rang tugmalari (o'rtada, harakat tugmalari ustida) ---
-  const cw=Math.min(68,W*.165);
-  const ch=Math.min(54,ctrlH*.4);
-  const cTot=cw*3+pad*2;
-  const csx=(W-cTot)/2;
-  const cY=row2Y-ch-8;
-  btns.R={x:csx,           y:cY, w:cw, h:ch};
-  btns.G={x:csx+cw+pad,    y:cY, w:cw, h:ch};
-  btns.B={x:csx+cw*2+pad*2,y:cY, w:cw, h:ch};
+  btns.left ={x:pad,y:row2Y,w:mvW,h:mvH};
+  btns.right={x:pad*2+mvW,y:row2Y,w:mvW,h:mvH};
+  const jpW=Math.min(82,W*.2),jpH=Math.min(82,H*.115);
+  btns.jump={x:W-jpW-pad,y:H-jpH-pad,w:jpW,h:jpH};
+  const cw=Math.min(70,W*.17),ch=Math.min(56,H*.08);
+  const tot=cw*3+pad*2,csx=(W-tot)/2,cY=row2Y-ch-8;
+  btns.R={x:csx,y:cY,w:cw,h:ch};
+  btns.G={x:csx+cw+pad,y:cY,w:cw,h:ch};
+  btns.B={x:csx+cw*2+pad*2,y:cY,w:cw,h:ch};
 }
+calcBtns();
 
-function inBtn(b,tx,ty){
-  // Kattaroq urish maydoni (20px atrofida)
-  const m=14;
-  return tx>=b.x-m&&tx<=b.x+b.w+m&&ty>=b.y-m&&ty<=b.y+b.h+m;
-}
-
-function getTxy(t){
+function inB(b,tx,ty){const m=16;return tx>=b.x-m&&tx<=b.x+b.w+m&&ty>=b.y-m&&ty<=b.y+b.h+m;}
+function gTxy(t){
   const r=canvas.getBoundingClientRect();
-  return{x:(t.clientX-r.left)*canvas.width/r.width, y:(t.clientY-r.top)*canvas.height/r.height};
+  return{x:(t.clientX-r.left)*canvas.width/r.width,y:(t.clientY-r.top)*canvas.height/r.height};
 }
 
 canvas.addEventListener('touchstart',e=>{
-  e.preventDefault(); initAudio();
+  e.preventDefault();initAudio();
   if(gameState==='title')                   {startGame();return;}
   if(gameState==='over'||gameState==='win') {restartGame();return;}
-  if(gameState==='levelComplete')           {loadLevel(levelIdx);gameState='playing';return;}
+  if(gameState==='levelComplete')           {startCountDown();loadLevel(levelIdx);gameState='countdown';return;}
   for(const t of e.changedTouches){
-    const{x,y}=getTxy(t);
-    if(inBtn(btns.left,x,y))  touch.left=true;
-    if(inBtn(btns.right,x,y)) touch.right=true;
-    if(inBtn(btns.jump,x,y))  player.jump();
-    if(inBtn(btns.R,x,y))setColor(0);
-    if(inBtn(btns.G,x,y))setColor(1);
-    if(inBtn(btns.B,x,y))setColor(2);
+    const{x,y}=gTxy(t);
+    if(inB(btns.left,x,y))  touch.left=true;
+    if(inB(btns.right,x,y)) touch.right=true;
+    if(inB(btns.jump,x,y))  player.jump();
+    if(inB(btns.R,x,y))setColor(0);
+    if(inB(btns.G,x,y))setColor(1);
+    if(inB(btns.B,x,y))setColor(2);
   }
 },{passive:false});
-
 canvas.addEventListener('touchend',e=>{
   e.preventDefault();
-  touch.left=false; touch.right=false;
+  touch.left=false;touch.right=false;
   for(const t of e.touches){
-    const{x,y}=getTxy(t);
-    if(inBtn(btns.left,x,y))  touch.left=true;
-    if(inBtn(btns.right,x,y)) touch.right=true;
+    const{x,y}=gTxy(t);
+    if(inB(btns.left,x,y)) touch.left=true;
+    if(inB(btns.right,x,y))touch.right=true;
   }
 },{passive:false});
-
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
-  touch.left=false; touch.right=false;
+  touch.left=false;touch.right=false;
   for(const t of e.touches){
-    const{x,y}=getTxy(t);
-    if(inBtn(btns.left,x,y))  touch.left=true;
-    if(inBtn(btns.right,x,y)) touch.right=true;
+    const{x,y}=gTxy(t);
+    if(inB(btns.left,x,y)) touch.left=true;
+    if(inB(btns.right,x,y))touch.right=true;
   }
 },{passive:false});
 
-// =========================================================
-//  YULDUZLAR
-// =========================================================
-const STARS=Array.from({length:140},()=>({fx:Math.random(),fy:Math.random(),r:Math.random()*1.5+.3,speed:Math.random()*.0003+.0001,t:Math.random()*Math.PI*2}));
-function drawStars(W,H,parallax){
+// ─── YULDUZLAR ──────────────────────────────────────────────
+const STARS=Array.from({length:150},()=>({
+  fx:Math.random(),fy:Math.random(),r:Math.random()*1.5+.3,
+  spd:Math.random()*.0003+.0001,t:Math.random()*Math.PI*2
+}));
+function drawStars(W,H,par){
   for(const s of STARS){
-    s.t+=s.speed*60;
-    const a=.22+Math.sin(s.t)*.2;
-    const px=((s.fx*W)-(cam.x*(parallax||.08))+W*50)%W;
+    s.t+=s.spd*60;
+    const a=.2+Math.sin(s.t)*.2;
+    const px=((s.fx*W)-(cam.x*(par||.07))+W*60)%W;
     ctx.fillStyle=`rgba(255,255,255,${a})`;
     ctx.beginPath();ctx.arc(px,s.fy*H,s.r,0,Math.PI*2);ctx.fill();
   }
 }
 
-// =========================================================
-//  O'YIN TASVIRI
-// =========================================================
-function drawBg(){
-  const bg=ctx.createLinearGradient(0,0,0,canvas.height);
-  bg.addColorStop(0,currentLevel.bgTop); bg.addColorStop(1,currentLevel.bgBot);
-  ctx.fillStyle=bg; ctx.fillRect(0,0,canvas.width,canvas.height);
-  drawStars(canvas.width,canvas.height,.08);
-}
-
+// ─── HUD ────────────────────────────────────────────────────
 function drawHUD(){
   const W=canvas.width;
-  ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(0,0,W,50);
+  ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,50);
   ctx.textBaseline='middle';
   // Jonlar
-  ctx.fillStyle='#ff4466'; ctx.font=`bold ${Math.min(14,W*.036)}px Arial`;
-  ctx.textAlign='left'; ctx.fillText('❤️'.repeat(Math.max(0,lives)),10,25);
+  ctx.fillStyle='#ff4466';ctx.font=`bold ${Math.min(14,W*.035)}px Arial`;
+  ctx.textAlign='left';ctx.fillText('❤️'.repeat(Math.max(0,lives)),10,25);
   // Ball
-  ctx.fillStyle='#ffee88'; ctx.font=`bold ${Math.min(14,W*.036)}px Arial`;
-  ctx.textAlign='center'; ctx.fillText(`⭐ ${score}`,W/2,25);
+  ctx.fillStyle='#ffee88';ctx.font=`bold ${Math.min(14,W*.035)}px Arial`;
+  ctx.textAlign='center';ctx.fillText(`⭐ ${score}`,W/2,25);
   // Daraja nomi
-  ctx.fillStyle='#99aadd'; ctx.font=`${Math.min(10,W*.027)}px Arial`;
-  ctx.textAlign='right'; ctx.fillText(currentLevel.name,W-8,16);
+  ctx.fillStyle='#99aadd';ctx.font=`${Math.min(10,W*.026)}px Arial`;
+  ctx.textAlign='right';ctx.fillText(currentLevel.name,W-8,16);
   // Aktiv rang
-  ctx.fillStyle=CHEX[activeC]; ctx.shadowColor=CHEX[activeC]; ctx.shadowBlur=9;
-  ctx.font=`bold ${Math.min(10,W*.027)}px Arial`;
+  ctx.fillStyle=CHEX[activeC];ctx.shadowColor=CHEX[activeC];ctx.shadowBlur=9;
+  ctx.font=`bold ${Math.min(10,W*.026)}px Arial`;
   ctx.fillText(`${CNAME[activeC].toUpperCase()} — O'CHIRILGAN`,W-8,38);
   ctx.shadowBlur=0;
+
+  // Progress bar
+  const prog=Math.min(1,player.x/Math.max(1,currentLevel.worldW-canvas.width));
+  const bx=W*.15,bw=W*.7,by=43,bh=5;
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(bx,by,bw,bh);
+  const pg=ctx.createLinearGradient(bx,0,bx+bw,0);
+  pg.addColorStop(0,CHEX[0]);pg.addColorStop(.5,CHEX[1]);pg.addColorStop(1,CHEX[2]);
+  ctx.fillStyle=pg;ctx.shadowColor='#fff';ctx.shadowBlur=5;
+  ctx.fillRect(bx,by,bw*prog,bh);
+  ctx.shadowBlur=0;
+  // Portal ikona
+  ctx.font='10px Arial';ctx.textAlign='left';ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.fillText('🚩',bx+bw*prog-5,by+bh+8);
 }
 
-/* --- Tugma chizish --- */
-function drawBtn(b,lbl,col,active,fontSize){
-  ctx.save(); ctx.globalAlpha=active?1:.62;
+// ─── TUGMALAR CHIZISH ───────────────────────────────────────
+function drawBtn(b,lbl,col,active,fs){
+  ctx.save();ctx.globalAlpha=active?1:.62;
   ctx.fillStyle=active?col+'bb':'#111133cc';
-  ctx.shadowColor=col; ctx.shadowBlur=active?28:10;
-  ctx.beginPath(); ctx.roundRect(b.x,b.y,b.w,b.h,14); ctx.fill();
-  ctx.strokeStyle=col; ctx.lineWidth=active?3:1.8; ctx.stroke();
-  ctx.shadowBlur=0; ctx.fillStyle='#fff';
-  ctx.font=`bold ${fontSize||Math.min(b.h*.55,26)}px Arial`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.shadowColor=col;ctx.shadowBlur=active?28:10;
+  ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,14);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=active?3:1.8;ctx.stroke();
+  ctx.shadowBlur=0;ctx.fillStyle='#fff';
+  ctx.font=`bold ${fs||Math.min(b.h*.55,26)}px Arial`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText(lbl,b.x+b.w/2,b.y+b.h/2);
   ctx.restore();
 }
 
 function drawControls(){
-  updateBtns();
-  const W=canvas.width, H=canvas.height;
-  // Boshqaruv paneli foni
-  const barTop=Math.min(btns.R.y,btns.left.y)-12;
-  const barGr=ctx.createLinearGradient(0,barTop,0,H);
-  barGr.addColorStop(0,'rgba(0,0,5,0)');
-  barGr.addColorStop(.12,'rgba(0,0,15,.88)');
-  barGr.addColorStop(1,'rgba(0,0,20,.96)');
-  ctx.fillStyle=barGr; ctx.fillRect(0,barTop,W,H-barTop);
+  calcBtns();
+  const W=canvas.width,H=canvas.height;
+  const barTop=Math.min(btns.R.y,btns.left.y)-14;
+  const bg=ctx.createLinearGradient(0,barTop,0,H);
+  bg.addColorStop(0,'rgba(0,0,5,0)');bg.addColorStop(.1,'rgba(0,0,15,.88)');bg.addColorStop(1,'rgba(0,0,20,.97)');
+  ctx.fillStyle=bg;ctx.fillRect(0,barTop,W,H-barTop);
+  ctx.strokeStyle='rgba(100,100,180,.15)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,barTop+14);ctx.lineTo(W,barTop+14);ctx.stroke();
 
-  // Ajratuvchi chiziq
-  ctx.strokeStyle='rgba(100,100,180,.18)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(0,barTop+12); ctx.lineTo(W,barTop+12); ctx.stroke();
-
-  // Harakat tugmalari (katta)
-  drawBtn(btns.left, '◀','#4466cc',touch.left);
+  drawBtn(btns.left,'◀','#4466cc',touch.left);
   drawBtn(btns.right,'▶','#4466cc',touch.right);
-  drawBtn(btns.jump, '▲','#8855cc',false,Math.min(btns.jump.h*.6,30));
-
-  // Rang tugmalari — yorliq bilan
+  drawBtn(btns.jump,'▲','#8855cc',false,Math.min(btns.jump.h*.6,30));
   drawBtn(btns.R,'R',CHEX[0],activeC===0,Math.min(btns.R.h*.55,22));
   drawBtn(btns.G,'G',CHEX[1],activeC===1,Math.min(btns.G.h*.55,22));
-  drawBtn(btns.B,"B",CHEX[2],activeC===2,Math.min(btns.B.h*.55,22));
+  drawBtn(btns.B,'B',CHEX[2],activeC===2,Math.min(btns.B.h*.55,22));
 
-  // "O'CHIRISH" yozuvi rang tugmalari ustida
-  ctx.fillStyle='rgba(180,180,220,.55)';
-  ctx.font=`${Math.min(9.5,W*.024)}px Arial`;
-  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillStyle='rgba(180,180,220,.5)';ctx.font=`${Math.min(9.5,W*.024)}px Arial`;
+  ctx.textAlign='center';ctx.textBaseline='bottom';
   ctx.fillText("RANGNI O'CHIR",W/2,btns.R.y-3);
 }
 
-// =========================================================
-//  KIRISH EKRANI (Title Screen)
-// =========================================================
+// ─── COUNTDOWN ──────────────────────────────────────────────
+function drawCountDown(){
+  const W=canvas.width,H=canvas.height;
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  const n=Math.ceil(countDown);
+  const scale=1+(countDown%1)*.6;
+  ctx.font=`bold ${Math.min(W*.32,130)*scale}px Arial`;
+  ctx.fillStyle=n===3?CHEX[0]:n===2?CHEX[1]:CHEX[2];
+  ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=50;
+  ctx.globalAlpha=.9+Math.sin(frame*.3)*.1;
+  ctx.fillText(n>0?n:'GO!',W/2,H*.42);
+  ctx.restore();
+}
+
+// ─── TITLE SCREEN ───────────────────────────────────────────
 function drawTitle(){
   titleT+=.018;
-  const W=canvas.width, H=canvas.height;
-  // Fon
+  const W=canvas.width,H=canvas.height;
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#03031a'); bg.addColorStop(1,'#0c041e');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  bg.addColorStop(0,'#03031a');bg.addColorStop(1,'#0c041e');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   drawStars(W,H,0);
-
-  // Uchuvchi ranglar shari
+  // Uchuvchi sferalar
   [[CHEX[0],.17,.46],[CHEX[1],.5,.32],[CHEX[2],.83,.46]].forEach(([c,fx,fy],i)=>{
-    const ox=W*fx+Math.cos(titleT+i*2.1)*30, oy=H*fy+Math.sin(titleT*1.3+i)*22;
+    const ox=W*fx+Math.cos(titleT+i*2.1)*30,oy=H*fy+Math.sin(titleT*1.3+i)*22;
     const rg=ctx.createRadialGradient(ox,oy,0,ox,oy,80);
-    rg.addColorStop(0,c+'55'); rg.addColorStop(1,c+'00');
-    ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(ox,oy,80,0,Math.PI*2); ctx.fill();
+    rg.addColorStop(0,c+'55');rg.addColorStop(1,c+'00');
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(ox,oy,80,0,Math.PI*2);ctx.fill();
   });
-
-  ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
-
-  // Sarlavha — rangberang to'lqin
+  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+  // Sarlavha
   const fs=Math.min(W*.086,37);
   ctx.font=`bold ${fs}px Arial`;
   const title="RANGLAR KO'RLIGI";
   const tw=ctx.measureText(title).width;
-  const sx2=W/2-tw/2;
-  const rcols=[CHEX[0],'#ff9933','#ffee00',CHEX[1],CHEX[2],'#aa44ff'];
+  const sx=W/2-tw/2;
+  const rc=[CHEX[0],'#ff9933','#ffee00',CHEX[1],CHEX[2],'#aa44ff'];
   let cx2=0;
   for(let i=0;i<title.length;i++){
-    const ci=(i+Math.floor(titleT*2))%rcols.length;
-    ctx.fillStyle=rcols[ci]; ctx.shadowColor=rcols[ci]; ctx.shadowBlur=18;
+    const ci=(i+Math.floor(titleT*2))%rc.length;
+    ctx.fillStyle=rc[ci];ctx.shadowColor=rc[ci];ctx.shadowBlur=18;
     const cw2=ctx.measureText(title[i]).width;
-    ctx.fillText(title[i],sx2+cx2+cw2/2,H*.25+Math.sin(titleT*2.5+i*.4)*8);
+    ctx.fillText(title[i],sx+cx2+cw2/2,H*.24+Math.sin(titleT*2.5+i*.4)*8);
     cx2+=cw2;
   }
-
-  // Kichik sarlavha
-  ctx.shadowBlur=6; ctx.shadowColor='#88aaff'; ctx.fillStyle='#aabbff';
+  ctx.shadowBlur=6;ctx.shadowColor='#88aaff';ctx.fillStyle='#aabbff';
   ctx.font=`${Math.min(W*.038,15.5)}px Arial`;
-  ctx.fillText('Color Shift Adventure  🎮',W/2,H*.34);
-
-  // Qoidalar paneli
+  ctx.fillText('Color Shift Adventure  🎮',W/2,H*.33);
+  // Eng yaxshi natija
+  if(bestScore>0){
+    ctx.shadowBlur=0;ctx.fillStyle='#ffdd88';
+    ctx.font=`${Math.min(W*.03,12)}px Arial`;
+    ctx.fillText(`🏆 Rekord: ${bestScore}`,W/2,H*.39);
+  }
   ctx.shadowBlur=0;
   const tips=[
     {e:'🔴',t:"R tugma → Qizil to'siqlar yo'qoladi",c:'#ff7788'},
     {e:'🟢',t:"G tugma → Yashil to'siqlar yo'qoladi",c:'#77ffaa'},
     {e:'🔵',t:"B tugma → Ko'k to'siqlar yo'qoladi",c:'#7799ff'},
-    {e:'⭐',t:"Olmoslar yig'ing, portga yeting!",c:'#ffdd88'},
+    {e:'⭐',t:"Olmoslar yig'ing va portga yeting!",c:'#ffdd88'},
     {e:'👟',t:"Dushmanlarni tepib o'ldiring!",c:'#ffbb88'},
   ];
-  const tfs=Math.min(W*.033,13.5);
-  ctx.font=`${tfs}px Arial`;
-  const tipTop=H*.43;
-  tips.forEach((tip,i)=>{ctx.fillStyle=tip.c; ctx.fillText(`${tip.e}  ${tip.t}`,W/2,tipTop+i*(tfs*1.9));});
-
-  // === BOSING tugmasi (yangi, chiroyli) ===
+  const tfs=Math.min(W*.033,13.5);ctx.font=`${tfs}px Arial`;
+  const tipTop=H*(bestScore>0?.44:.43);
+  tips.forEach((t,i)=>{ctx.fillStyle=t.c;ctx.fillText(`${t.e}  ${t.t}`,W/2,tipTop+i*(tfs*1.9));});
+  // O'ynash tugmasi
   const pulse=.65+Math.sin(titleT*3.8)*.35;
-  const bW=Math.min(300,W*.78);
-  const bH=Math.min(60,H*.075);
-  const bX=W/2-bW/2;
-  const bY=H*.84;
-
-  // Soya glow
-  ctx.shadowColor='#44ffbb'; ctx.shadowBlur=22+pulse*28;
-  // Fon
+  const bW=Math.min(310,W*.8),bH=Math.min(62,H*.078);
+  const bX=W/2-bW/2,bY=H*.845;
+  ctx.shadowColor='#44ffbb';ctx.shadowBlur=22+pulse*28;
   const bGr=ctx.createLinearGradient(bX,bY,bX,bY+bH);
   bGr.addColorStop(0,`rgba(16,70,48,${.82+pulse*.18})`);
   bGr.addColorStop(1,`rgba(8,40,26,${.82+pulse*.18})`);
-  ctx.fillStyle=bGr;
-  ctx.beginPath(); ctx.roundRect(bX,bY,bW,bH,16); ctx.fill();
-  // Chegara
-  ctx.strokeStyle=`rgba(60,240,160,${.65+pulse*.35})`; ctx.lineWidth=2.5; ctx.stroke();
-  // Matn
-  ctx.shadowBlur=0; ctx.globalAlpha=.85+pulse*.15;
-  ctx.fillStyle='#ffffff';
-  ctx.font=`bold ${Math.min(bH*.48,23)}px Arial`;
-  ctx.fillText('▶  O\'YNASH BOSHLASH  ◀',W/2,bY+bH/2);
-
-  // Pastda kichik izoh
-  ctx.globalAlpha=.5; ctx.fillStyle='#aabbcc';
+  ctx.fillStyle=bGr;ctx.beginPath();ctx.roundRect(bX,bY,bW,bH,17);ctx.fill();
+  ctx.strokeStyle=`rgba(60,240,160,${.65+pulse*.35})`;ctx.lineWidth=2.5;ctx.stroke();
+  ctx.shadowBlur=0;ctx.globalAlpha=.85+pulse*.15;ctx.fillStyle='#fff';
+  ctx.font=`bold ${Math.min(bH*.48,24)}px Arial`;
+  ctx.fillText('▶  O\'YNASHNI BOSHLASH  ◀',W/2,bY+bH/2);
+  ctx.globalAlpha=.5;ctx.fillStyle='#aabbcc';
   ctx.font=`${Math.min(W*.03,12)}px Arial`;
-  ctx.fillText('Teging yoki istalgan tugmani bosing',W/2,bY+bH+16);
-
+  ctx.fillText('Teging yoki istalgan tugmani bosing',W/2,bY+bH+17);
   ctx.restore();
 }
 
-// =========================================================
-//  ORALIQ EKRANLAR
-// =========================================================
+// ─── OVERLAY ────────────────────────────────────────────────
 function drawOverlay(t1,sub,hint,tc){
   titleT+=.025;
   const W=canvas.width,H=canvas.height;
-  ctx.save(); ctx.fillStyle='rgba(0,0,0,.82)'; ctx.fillRect(0,0,W,H);
-  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.save();ctx.fillStyle='rgba(0,0,0,.82)';ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font=`bold ${Math.min(W*.1,42)}px Arial`;
-  ctx.fillStyle=tc; ctx.shadowColor=tc; ctx.shadowBlur=35;
-  ctx.fillText(t1,W/2,H*.32+Math.sin(titleT*3)*6);
+  ctx.fillStyle=tc;ctx.shadowColor=tc;ctx.shadowBlur=35;
+  ctx.fillText(t1,W/2,H*.3+Math.sin(titleT*3)*6);
   if(sub){
-    ctx.shadowBlur=0; ctx.fillStyle='#fff';
+    ctx.shadowBlur=0;ctx.fillStyle='#fff';
     ctx.font=`bold ${Math.min(W*.065,26)}px Arial`;
-    ctx.fillText(sub,W/2,H*.48);
+    ctx.fillText(sub,W/2,H*.45);
+    if(bestScore>0){
+      ctx.fillStyle='#ffdd88';ctx.font=`${Math.min(W*.035,14)}px Arial`;
+      ctx.fillText(`🏆 Rekord: ${bestScore}`,W/2,H*.53);
+    }
   }
   const pulse=.6+Math.sin(titleT*3.8)*.4;
-  const bW=Math.min(280,W*.72),bH=Math.min(54,H*.07),bX=W/2-bW/2,bY=H*.66;
-  ctx.shadowColor='#44ffbb'; ctx.shadowBlur=18+pulse*22;
+  const bW=Math.min(280,W*.72),bH=Math.min(54,H*.07),bX=W/2-bW/2,bY=H*.64;
+  ctx.shadowColor='#44ffbb';ctx.shadowBlur=18+pulse*22;
   ctx.fillStyle=`rgba(16,65,45,${.8+pulse*.2})`;
-  ctx.beginPath(); ctx.roundRect(bX,bY,bW,bH,14); ctx.fill();
-  ctx.strokeStyle=`rgba(60,240,150,${.6+pulse*.4})`; ctx.lineWidth=2.5; ctx.stroke();
-  ctx.shadowBlur=0; ctx.globalAlpha=.85+pulse*.15; ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.roundRect(bX,bY,bW,bH,14);ctx.fill();
+  ctx.strokeStyle=`rgba(60,240,150,${.6+pulse*.4})`;ctx.lineWidth=2.5;ctx.stroke();
+  ctx.shadowBlur=0;ctx.globalAlpha=.85+pulse*.15;ctx.fillStyle='#fff';
   ctx.font=`bold ${Math.min(bH*.5,22)}px Arial`;
   ctx.fillText(hint,W/2,bY+bH/2);
   ctx.restore();
 }
 
-// =========================================================
-//  YANGILASH / TASVIR
-// =========================================================
+// ─── YANGILASH ──────────────────────────────────────────────
 function update(){
   frame++;
-  player.update(); updateCam();
-  for(const e of currentLevel.enemies)e.update();
-  for(const s of currentLevel.spikes) s.check();
-  for(const g of currentLevel.gems)   g.update();
-  currentLevel.portal.update();
-  parts=parts.filter(p=>{p.update();return!p.dead();});
+  // Countdown
+  if(gameState==='countdown'){
+    countTimer++;
+    if(countTimer%55===0){
+      countDown--;
+      if(countDown>0)snd('count');
+      else{snd('go');gameState='playing';countDown=0;}
+    }
+    return;
+  }
+  if(gameState!=='playing'&&gameState!=='levelComplete'&&gameState!=='win'&&gameState!=='over')return;
+
+  if(gameState==='playing'){
+    player.upd();updateCam();
+    for(const e of currentLevel.enemies)e.upd();
+    for(const s of currentLevel.spikes) s.check();
+    for(const g of currentLevel.gems)   g.upd();
+    currentLevel.portal.upd();
+  }
+  parts=parts.filter(p=>{p.upd();return!p.dead();});
+
   // Nishonlash zarralari
   if((gameState==='win'||gameState==='levelComplete')&&frame%2===0){
     const cols=[CHEX[0],CHEX[1],CHEX[2],'#ffdd00','#fff'];
     parts.push(new Particle(
-      Math.random()*canvas.width+cam.x, Math.random()*canvas.height*.65+cam.y,
-      cols[Math.random()*cols.length|0], (Math.random()-.5)*7,-Math.random()*7,2,5
+      Math.random()*canvas.width+cam.x,Math.random()*canvas.height*.65+cam.y,
+      cols[Math.random()*cols.length|0],(Math.random()-.5)*7,-Math.random()*7,2,5
     ));
   }
+
+  // Shake kamayishi
+  if(shakeAmt>0){shakeAmt*=.78;if(shakeAmt<.3)shakeAmt=0;}
+  // Flash kamayishi
+  if(flashAmt>0){flashAmt*=.82;if(flashAmt<.01)flashAmt=0;}
 }
 
+// ─── TASVIR ─────────────────────────────────────────────────
 function render(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
   if(gameState==='title'){drawTitle();return;}
-  drawBg();
+
+  // Screen shake
+  ctx.save();
+  if(shakeAmt>0)ctx.translate((Math.random()-.5)*shakeAmt*2,(Math.random()-.5)*shakeAmt*2);
+
+  // Fon
+  const bg=ctx.createLinearGradient(0,0,0,canvas.height);
+  bg.addColorStop(0,currentLevel.bgTop);bg.addColorStop(1,currentLevel.bgBot);
+  ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  drawStars(canvas.width,canvas.height,.08);
+
+  // O'yin elementlari
   for(const p of currentLevel.plats)   p.draw();
   for(const s of currentLevel.spikes)  s.draw();
   for(const g of currentLevel.gems)    g.draw();
+  if(currentLevel.hints)for(const h of currentLevel.hints)h.draw();
   currentLevel.portal.draw();
   for(const e of currentLevel.enemies) e.draw();
   player.draw();
   for(const p of parts)p.draw();
+
+  // Rang o'zgartirish flesh
+  if(flashAmt>0){
+    ctx.globalAlpha=flashAmt*.3;
+    ctx.fillStyle=flashCol;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalAlpha=1;
+  }
+
+  ctx.restore(); // shake restore
+
+  // HUD va tugmalar (shake ta'sir qilmaydi)
   drawHUD();
   drawControls();
+
+  // Countdown overlay
+  if(gameState==='countdown')drawCountDown();
+
+  // Boshqa ekranlar
   if(gameState==='levelComplete')drawOverlay('🎉 DARAJA TUGADI!',`Natija: ⭐ ${score}`,'▶ DAVOM ETISH ◀','#ffdd00');
-  if(gameState==='over')         drawOverlay("💔 O'YIN TUGADI",`Natija: ⭐ ${score}`,'▶ QAYTA URINISH ◀','#ff3355');
+  if(gameState==='over')         drawOverlay('💔 O\'YIN TUGADI',`Natija: ⭐ ${score}`,'▶ QAYTA URINISH ◀','#ff3355');
   if(gameState==='win')          drawOverlay("🏆 G'OLIB! 🏆",`Umumiy natija: ⭐ ${score}`,"▶ QAYTA O'YNASH ◀",'#ffdd00');
 }
 
-function loop(){
-  if(gameState==='playing'||gameState==='levelComplete'||gameState==='over'||gameState==='win')update();
-  render();
-  requestAnimationFrame(loop);
-}
+function loop(){update();render();requestAnimationFrame(loop);}
 
-// =========================================================
-//  ISHGA TUSHIRISH
-// =========================================================
-loadLevel(0); gameState='title'; updateBtns(); loop();
+// ─── ISHGA TUSHIRISH ────────────────────────────────────────
+loadLevel(0);gameState='title';calcBtns();
+// Musiqa title ekranda boshlanmaydi — faqat o'yinda
+window.addEventListener('keydown',()=>{if(gameState!=='title'&&!bgmRunning){initAudio();startBGM();}},{once:false,passive:true});
+canvas.addEventListener('touchstart',()=>{if(gameState!=='title'&&!bgmRunning){initAudio();startBGM();}},{passive:true});
+loop();
 </script>
 </body>
 </html>
